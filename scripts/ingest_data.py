@@ -13,19 +13,28 @@ The pipeline:
 from __future__ import annotations
 
 import argparse
-import json
 from pathlib import Path
 from typing import List
 
 import spacy
 from unstructured.partition.auto import partition
-from llama_index.core import Document, VectorStoreIndex
-from llama_index.embeddings.ollama import OllamaEmbedding
+from unstructured.partition.common import UnsupportedFileFormatError
+# type: ignore[import-not-found]
+from llama_index.core import (
+    Document,  # type: ignore[import-not-found]
+    VectorStoreIndex,  # type: ignore[import-not-found]
+)
+from llama_index.embeddings.ollama import (
+    OllamaEmbedding,  # type: ignore[import-not-found]
+)
 
 from src.utils.logger import get_logger
 from src.tools.chromadb_agent import ChromaDBAgent
 from src.tools.neo4j_agent import Neo4jAgent
 from src.config import get_settings
+
+import subprocess
+import sys
 
 logger = get_logger(__name__)
 settings = get_settings()
@@ -37,10 +46,17 @@ def _load_spacy() -> spacy.language.Language:  # noqa: D401
     try:
         return spacy.load("en_core_web_sm")
     except OSError:
-        import subprocess, sys
-
         logger.info("Downloading spaCy model en_core_web_sm…")
-        subprocess.run([sys.executable, "-m", "spacy", "download", "en_core_web_sm"], check=True)
+        subprocess.run(
+            [
+                sys.executable,
+                "-m",
+                "spacy",
+                "download",
+                "en_core_web_sm",
+            ],
+            check=True,
+        )
         return spacy.load("en_core_web_sm")
 
 
@@ -52,9 +68,28 @@ def parse_documents(source_dir: Path) -> List[Document]:  # noqa: D401
         if file_path.is_dir():
             continue
         logger.info("Parsing %s", file_path.name)
-        elements = partition(file_path)
-        text = "\n".join([el.text for el in elements if hasattr(el, "text")])
-        docs.append(Document(text=text, metadata={"filename": file_path.name}))
+        try:
+            elements = partition(file_path)
+        except UnsupportedFileFormatError:  # skip unknown file types
+            logger.warning("Skipping unsupported file type: %s", file_path.name)
+            continue
+        except ImportError as exc:
+            logger.warning(
+                "Skipping %s due to missing partition dependency: %s",
+                file_path.name,
+                exc,
+            )
+            continue
+        except Exception as exc:  # noqa: BLE001
+            logger.error("Failed parsing %s: %s", file_path.name, exc)
+            continue
+        texts = [el.text for el in elements if hasattr(el, "text")]
+        docs.append(
+            Document(
+                text="\n".join(texts),
+                metadata={"filename": file_path.name},
+            )
+        )
     logger.info("Parsed %d documents", len(docs))
     return docs
 
@@ -73,11 +108,14 @@ def ingest(source_dir: Path) -> None:  # noqa: D401
     # ------------------------------------
     # Embedding + ChromaDB via LlamaIndex
     # ------------------------------------
-    embed_model = OllamaEmbedding(model_name=settings.ollama_model, base_url=settings.ollama_host)
-    index = VectorStoreIndex.from_documents(
+    embed_model = OllamaEmbedding(
+        model_name=settings.ollama_model,
+        base_url=settings.ollama_host,
+    )
+    VectorStoreIndex.from_documents(  # noqa: E501
         docs,
         embed_model=embed_model,
-        vector_store=ChromaDBAgent()._collection,  # use underlying collection
+        vector_store=ChromaDBAgent()._collection,
     )
     logger.info("Embedded %d documents into ChromaDB", len(docs))
 
