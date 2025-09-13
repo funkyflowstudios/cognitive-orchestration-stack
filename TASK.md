@@ -1,12 +1,12 @@
-# Phase 2 – Environment, Dependencies, and Configuration
+# Phase 3 – Core Orchestration & Reasoning Layers
 
 ## Checklist
-- [ ] Create `src/` directory
-- [ ] Generate `requirements.txt` with core libraries
-- [ ] Create `src/config.py` loading environment variables via `python-dotenv`/`pydantic`
-- [ ] Add `.env.example` template with variable descriptions
-- [ ] Produce `README.md` including Getting Started instructions
-- [ ] Update `PROJECT_PROGRESS.md` (Phase 1 ➜ Completed, Phase 2 ➜ Completed)
+- [ ] Implement reusable logger `src/utils/logger.py`
+- [ ] Define application state model `src/orchestration/state.py`
+- [ ] Implement LangGraph nodes `src/orchestration/nodes.py`
+- [ ] Assemble state machine `src/orchestration/graph.py`
+- [ ] Provide CLI entry `src/main.py`
+- [ ] Update `PROJECT_PROGRESS.md` (Phase 3 Completed)
 - [ ] Commit all changes
 
 ## Execution Notes
