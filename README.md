@@ -40,3 +40,12 @@ Refer to `DEVOPS_PLAN.md` for deeper environment details.
 ## Usage
 
 ### Data Ingestion
+Place source documents into the `data/` folder then run:
+```bash
+python -m scripts.ingest_data --source_dir data
+```
+
+### Ask the Agent via CLI
+```bash
+python -m src.main --question "What is the capital of France?"
+```
