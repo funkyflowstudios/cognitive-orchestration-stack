@@ -1,0 +1,13 @@
+langgraph
+ollama
+neo4j
+chromadb-client
+llama-index
+unstructured
+spacy
+python-dotenv
+fastapi
+uvicorn
+pytest
+coverage
+pytest-asyncio
