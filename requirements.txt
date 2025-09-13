@@ -11,3 +11,5 @@ uvicorn
 pytest
 coverage
 pytest-asyncio
+pydantic
+pydantic-settings

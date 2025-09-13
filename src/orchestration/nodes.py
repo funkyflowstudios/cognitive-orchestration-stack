@@ -3,8 +3,16 @@ from __future__ import annotations
 """LangGraph node implementations for the reasoning workflow."""
 
 from typing import List
+import json
+from src.config import get_settings
+import ollama
 
-from langgraph.prebuilt import tool
+# Instantiate LLM client once
+_settings = get_settings()
+_ollama_client = ollama.Client(host=_settings.ollama_host)
+
+# Available tool names
+AVAILABLE_TOOLS: List[str] = ["graph_query", "vector_search"]
 
 from ..utils.logger import get_logger
 from .state import AgentState
@@ -21,7 +29,26 @@ def planner_node(state: AgentState) -> AgentState:  # noqa: D401
     """Create a naive execution plan (mock)."""
 
     logger.info("Planner received query: %s", state.query)
-    plan: List[str] = ["vector_search"]
+    # Build LLM prompt
+    prompt = (
+        "You are an expert AI planning agent. "
+        "Available tools: " + ", ".join(AVAILABLE_TOOLS) + ". "
+        "Given the user question delimited by <question></question>,"\
+        " output ONLY a JSON array of tool names (lower_snake_case) that should be executed in order.\n"\
+        "<question>" + state.query + "</question>"
+    )
+
+    try:
+        llm_resp = _ollama_client.generate(model=_settings.ollama_model, prompt=prompt)
+        plan = json.loads(llm_resp["response"].strip())  # type: ignore[arg-type]
+        if not isinstance(plan, list):
+            raise ValueError("Planner LLM did not return a list")
+        # keep only known tools
+        plan = [t for t in plan if t in AVAILABLE_TOOLS]
+    except Exception as exc:  # noqa: BLE001
+        logger.error("Planner LLM failed: %s", exc)
+        plan = ["vector_search"]
+
     logger.info("Generated plan: %s", plan)
     state.plan = plan
     return state
@@ -87,8 +114,23 @@ def validation_critique_node(state: AgentState) -> AgentState:  # noqa: D401
 # --- Synthesizer -------------------------------------------------------------
 
 def synthesizer_node(state: AgentState) -> AgentState:  # noqa: D401
-    """Generate final answer by combining tool output (mock)."""
+    """Call the LLM to craft the final answer from tool outputs."""
 
-    state.response = state.tool_output or "No answer produced"
+    context = state.tool_output or ""
+    prompt = (
+        "You are an expert AI assistant. "
+        "Answer the user's question based on the provided context.\n"
+        f"Question: {state.query}\n"
+        f"Context: {context}\n\n"
+        "Final answer:"
+    )
+
+    try:
+        llm_resp = _ollama_client.generate(model=_settings.ollama_model, prompt=prompt)
+        state.response = llm_resp["response"].strip()  # type: ignore[index]
+    except Exception as exc:  # noqa: BLE001
+        logger.error("Synthesizer LLM failed: %s", exc)
+        state.response = context or "I am unable to answer at the moment."
+
     logger.info("Synthesized response: %s", state.response)
     return state

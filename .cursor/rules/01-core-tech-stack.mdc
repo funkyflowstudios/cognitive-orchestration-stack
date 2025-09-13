@@ -13,3 +13,4 @@ The Cognitive Orchestration Stack MUST use **exactly** the technologies listed b
 * ChromaDB – vector store
 * LlamaIndex – ingestion pipelines
 * FastAPI – service API layer
+  

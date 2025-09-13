@@ -6,8 +6,8 @@ from typing import Any, List
 
 from neo4j import GraphDatabase, BoltDriver
 
-from utils.logger import get_logger
-from config import get_settings
+from ..utils.logger import get_logger
+from src.config import get_settings
 
 logger = get_logger(__name__)
 settings = get_settings()
