@@ -11,3 +11,15 @@
 
 ## Execution Notes
 Follow DevOps plan in `DEVOPS_PLAN.md` and coding standards. Ensure reproducible environment.
+
+# Phase 4 – Knowledge & Ingestion Layers
+
+## Checklist
+- [ ] Create directories: `src/tools/`, `scripts/`, `data/`
+- [ ] Implement Neo4j agent `src/tools/neo4j_agent.py`
+- [ ] Implement ChromaDB agent `src/tools/chromadb_agent.py`
+- [ ] Wire real tools into `src/orchestration/nodes.py`
+- [ ] Build ingestion script `scripts/ingest_data.py`
+- [ ] Update `README.md` with ingestion instructions
+- [ ] Update `PROJECT_PROGRESS.md` (Phase 4 Completed)
+- [ ] Commit all changes

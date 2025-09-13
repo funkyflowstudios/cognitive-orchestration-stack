@@ -1,7 +1,7 @@
 langgraph
 ollama
 neo4j
-chromadb-client
+chromadb
 llama-index
 unstructured
 spacy

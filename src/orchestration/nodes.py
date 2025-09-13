@@ -8,6 +8,9 @@ from langgraph.prebuilt import tool
 
 from ..utils.logger import get_logger
 from .state import AgentState
+from src.tools.neo4j_agent import Neo4jAgent
+from src.tools.chromadb_agent import ChromaDBAgent
+
 
 logger = get_logger(__name__)
 
@@ -18,7 +21,7 @@ def planner_node(state: AgentState) -> AgentState:  # noqa: D401
     """Create a naive execution plan (mock)."""
 
     logger.info("Planner received query: %s", state.query)
-    plan: List[str] = ["mock_tool"]
+    plan: List[str] = ["vector_search"]
     logger.info("Generated plan: %s", plan)
     state.plan = plan
     return state
@@ -26,10 +29,18 @@ def planner_node(state: AgentState) -> AgentState:  # noqa: D401
 
 # --- Tool Executor -----------------------------------------------------------
 
-def _mock_tool(query: str) -> str:
-    """Placeholder tool that echoes the query reversed."""
+neo4j_agent = Neo4jAgent()
+chroma_agent = ChromaDBAgent()
 
-    return query[::-1]
+
+def _graph_query(query: str) -> str:
+    results = neo4j_agent.query("MATCH (n) RETURN n LIMIT 1")
+    return str(results)
+
+
+def _vector_search(query: str) -> str:
+    ids = chroma_agent.similarity_search(query)
+    return f"Top document IDs: {ids}"
 
 
 def tool_executor_node(state: AgentState) -> AgentState:  # noqa: D401
@@ -44,9 +55,14 @@ def tool_executor_node(state: AgentState) -> AgentState:  # noqa: D401
 
     logger.info("Executing tool: %s", tool_name)
 
-    # For now, we only have one mock tool
-    if tool_name == "mock_tool":
-        state.tool_output = _mock_tool(state.query)
+    # Map tool names to functions
+    tool_map = {
+        "graph_query": _graph_query,
+        "vector_search": _vector_search,
+    }
+
+    if tool_name in tool_map:
+        state.tool_output = tool_map[tool_name](state.query)
     else:
         state.tool_output = f"Tool {tool_name} not implemented"
 
