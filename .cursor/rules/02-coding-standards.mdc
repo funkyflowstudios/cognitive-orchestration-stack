@@ -1,0 +1,10 @@
+---
+alwaysApply: true
+---
+
+# Coding Standards
+
+1. All Python code **must** conform to **PEP 8**.
+2. Every module, class, and function must include **type hints**.
+3. Each function requires a docstring describing purpose, arguments, return values, and exceptions.
+4. Variable and function names should be descriptive and self-documenting.

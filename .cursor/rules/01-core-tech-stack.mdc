@@ -1,0 +1,15 @@
+---
+alwaysApply: true
+---
+
+# Core Tech Stack (Non-Negotiable)
+
+The Cognitive Orchestration Stack MUST use **exactly** the technologies listed below for their respective concerns.  **DO NOT** substitute or add alternative libraries unless explicitly instructed.
+
+* Python 3.11+
+* LangGraph – orchestration
+* Ollama – LLM serving
+* Neo4j Community Edition – graph database
+* ChromaDB – vector store
+* LlamaIndex – ingestion pipelines
+* FastAPI – service API layer

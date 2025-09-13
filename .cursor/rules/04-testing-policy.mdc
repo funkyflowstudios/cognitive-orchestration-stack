@@ -1,0 +1,10 @@
+---
+description: "USE WHEN writing or modifying any test files."
+globs: "tests/**/*.py"
+---
+
+# Testing Policy
+
+* All unit tests must follow the **Arrange-Act-Assert** pattern.
+* Use `unittest.mock` to isolate external dependencies.
+* Aim for high coverage of business logic, minimum 80 %.
