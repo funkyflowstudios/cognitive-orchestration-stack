@@ -1,0 +1,25 @@
+2025-09-14 17:22:43,751 - __main__ - INFO - Starting step: 1. Import conftest first (this should stub LangGraph)
+2025-09-14 17:22:43,770 - __main__ - INFO - Starting step: 2. Check if LangGraph is stubbed
+2025-09-14 17:22:43,771 - __main__ - INFO - Starting step: 3. Import src.config
+2025-09-14 17:22:43,897 - __main__ - INFO - Starting step: 4. Import src.orchestration.state
+2025-09-14 17:22:43,901 - __main__ - INFO - Starting step: 5. Import src.orchestration.nodes (CRITICAL)
+2025-09-14 17:22:43,975 - __main__ - INFO - Starting step: 6. Import src.orchestration.graph (THIS IS WHERE IT MIGHT HANG)
+2025-09-14 17:22:43,975 - __main__ - INFO - Starting step: 7. Test graph functionality
+2025-09-14 17:23:16,024 - __main__ - INFO - Starting step: 1. Import conftest first (this should stub LangGraph)
+2025-09-14 17:23:16,043 - __main__ - INFO - Starting step: 2. Check if LangGraph is stubbed
+2025-09-14 17:23:16,044 - __main__ - INFO - Starting step: 3. Import src.config
+2025-09-14 17:23:16,173 - __main__ - INFO - Starting step: 4. Import src.orchestration.state
+2025-09-14 17:23:16,177 - __main__ - INFO - Starting step: 5. Import src.orchestration.nodes (CRITICAL)
+2025-09-14 17:23:16,248 - __main__ - INFO - Starting step: 6. Import src.orchestration.graph (THIS IS WHERE IT MIGHT HANG)
+2025-09-14 17:23:16,249 - __main__ - INFO - Starting step: 7. Test graph functionality
+2025-09-14 17:23:29,873 - __main__ - INFO - Starting step: 1. Import conftest first (this should stub LangGraph)
+2025-09-14 17:23:29,891 - __main__ - INFO - Starting step: 2. Check if LangGraph is stubbed
+2025-09-14 17:23:29,892 - __main__ - INFO - Starting step: 3. Import src.config
+2025-09-14 17:23:30,019 - __main__ - INFO - Starting step: 4. Import src.orchestration.state
+2025-09-14 17:23:30,023 - __main__ - INFO - Starting step: 5. Import src.orchestration.nodes (CRITICAL)
+2025-09-14 17:23:30,096 - __main__ - INFO - Starting step: 6. Import src.orchestration.graph (THIS IS WHERE IT MIGHT HANG)
+2025-09-14 17:23:30,097 - __main__ - INFO - Starting step: 7. Test graph functionality
+2025-09-14 17:23:30,097 - asyncio - DEBUG - Using proactor: IocpProactor
+2025-09-14 17:23:30,122 - __main__ - INFO - Starting step: 8. Test pytest import
+2025-09-14 17:23:30,176 - __main__ - INFO - Starting step: 9. Test pytest discovery on single file
+2025-09-14 17:23:30,992 - __main__ - INFO - Starting step: COMPLETE - All tests passed!
