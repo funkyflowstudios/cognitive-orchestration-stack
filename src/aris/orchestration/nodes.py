@@ -11,18 +11,18 @@ from pathlib import Path
 # Add src to path for imports
 sys.path.append(str(Path(__file__).parent.parent.parent))
 
-from .state import ResearchState, ScrapedContent
-from ..agents.search_agent import WebSearchAgent
-from ..agents.scraper_agent import WebScraperAgent
+from .state import ResearchState, ScrapedContent  # noqa: E402
+from ..agents.search_agent import WebSearchAgent  # noqa: E402
+from ..agents.scraper_agent import WebScraperAgent  # noqa: E402
 
 try:
-    from utils.logger import get_logger
-    from config import get_settings
+    from utils.logger import get_logger  # noqa: E402
+    from config import get_settings  # noqa: E402
 except ImportError:
-    from src.utils.logger import get_logger
-    from src.config import get_settings
+    from src.utils.logger import get_logger  # noqa: E402
+    from src.config import get_settings  # noqa: E402
 
-import ollama
+import ollama  # noqa: E402
 
 logger = get_logger(__name__)
 settings = get_settings()
