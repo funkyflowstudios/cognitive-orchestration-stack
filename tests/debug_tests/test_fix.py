@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Test the fix for hanging issues."""
 
-import sys
 import signal
+import sys
 
 # Add current directory to path
 sys.path.insert(0, '.')
@@ -47,8 +47,8 @@ def test_simple_execution():
     print("\nTesting simple execution...")
 
     try:
-        from src.orchestration.state import AgentState
         from src.orchestration.graph import GRAPH
+        from src.orchestration.state import AgentState
 
         # Create a simple state
         state = AgentState(query="test query")

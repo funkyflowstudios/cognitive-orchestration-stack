@@ -5,15 +5,15 @@ from __future__ import annotations
 # Standard library
 import time
 
-from rich.panel import Panel
 from rich.align import Align
 from rich.console import (
     Console,
     RenderableType,
 )
 from rich.live import Live
-from rich.text import Text
+from rich.panel import Panel
 from rich.spinner import Spinner
+from rich.text import Text
 
 from .theme import ZENITH_THEME
 
@@ -59,9 +59,7 @@ class FocusController:  # noqa: D101
     # --------------------------- API ------------------------------------
 
     def set_planning(self) -> None:  # noqa: D401
-        self._current_renderable = Spinner(
-            "dots", text=" [🧠 PLANNING] Thinking..."
-        )
+        self._current_renderable = Spinner("dots", text=" [🧠 PLANNING] Thinking...")
         self._live.update(self._current_renderable)
 
     def set_executing(self, tool: str) -> None:  # noqa: D401
@@ -87,7 +85,7 @@ class FocusController:  # noqa: D101
             markdown,
             title="[✨ ANSWER]",
             border_style="cyan",
-            expand=False  # This tells the panel to fit the content
+            expand=False,  # This tells the panel to fit the content
         )
         self._current_renderable = answer_panel
         self._live.update(self._current_renderable)

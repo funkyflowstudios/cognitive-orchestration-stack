@@ -6,8 +6,8 @@ This module defines the *Nocturne* colour palette and the custom
 *Newton's Cradle* spinner described in the Chimera Design Prospectus.
 """
 
+from rich.spinner import SPINNERS, Spinner
 from rich.theme import Theme
-from rich.spinner import Spinner, SPINNERS
 
 # ---------------------------------------------------------------------------
 # Colour palette – the *Nocturne* scheme

@@ -3,10 +3,11 @@
 Handles web search operations using DuckDuckGo search API.
 """
 
-from typing import List, Dict, Any
 import logging
 import sys
 from pathlib import Path
+from typing import Any, Dict, List
+
 from duckduckgo_search import DDGS
 
 # Add src to path for imports
@@ -29,9 +30,9 @@ class WebSearchAgent:
         """Executes a web search and returns the results."""
         print(f"-> Searching: '{query}'")
         with DDGS() as ddgs:
-            results = list(ddgs.text(
-                query, region='wt-wt', safesearch='off', timelimit='y'
-            ))
+            results = list(
+                ddgs.text(query, region="wt-wt", safesearch="off", timelimit="y")
+            )
             return results[:max_results]
 
 
@@ -58,20 +59,14 @@ class SearchAgent:
         """
         try:
             logger.info(f"Searching for: {query}")
-            results = list(
-                self.ddgs.text(query, max_results=self.max_results)
-            )
-            logger.info(
-                f"Found {len(results)} results for query: {query}"
-            )
+            results = list(self.ddgs.text(query, max_results=self.max_results))
+            logger.info(f"Found {len(results)} results for query: {query}")
             return results
         except Exception as e:
             logger.error(f"Search failed for query '{query}': {e}")
             return []
 
-    def search_multiple(
-        self, queries: List[str]
-    ) -> Dict[str, List[Dict[str, Any]]]:
+    def search_multiple(self, queries: List[str]) -> Dict[str, List[Dict[str, Any]]]:
         """Perform multiple searches and return results grouped by query.
 
         Args:

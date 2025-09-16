@@ -1,9 +1,12 @@
 from __future__ import annotations
+
 import asyncio
 from functools import lru_cache
 from typing import List
+
 import chromadb
 from llama_index.embeddings.ollama import OllamaEmbedding
+
 from src.config import get_settings
 from src.utils.logger import get_logger
 
@@ -29,15 +32,11 @@ class ChromaDBAgent:
             logger.info("ChromaDB client initialized with connection pooling")
 
         self._client = ChromaDBAgent._client
-        self._collection = self._client.get_or_create_collection(
-            collection_name
-        )
+        self._collection = self._client.get_or_create_collection(collection_name)
         self._embedding_function = ChromaDBAgent._embedding_function
         logger.info("ChromaDB collection '%s' ready", collection_name)
 
-    def similarity_search(
-        self, query: str, n_results: int = 5
-    ) -> List[str]:
+    def similarity_search(self, query: str, n_results: int = 5) -> List[str]:
         """Return the content of the most similar documents with LRU
         caching."""
         return self._cached_search(query, n_results)
@@ -68,12 +67,7 @@ class ChromaDBAgent:
         """Async version of similarity search for better performance."""
         # Run the cached search in a thread pool
         loop = asyncio.get_event_loop()
-        return await loop.run_in_executor(
-            None,
-            self._cached_search,
-            query,
-            n_results
-        )
+        return await loop.run_in_executor(None, self._cached_search, query, n_results)
 
     def clear_cache(self) -> None:
         """Clear the LRU cache."""

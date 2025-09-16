@@ -5,9 +5,10 @@ from __future__ import annotations
 
 import re
 import time
-from typing import Dict, List, Any
+from typing import Any, Dict, List
+
 from src.utils.logger import get_logger
-from src.utils.metrics import timing, histogram
+from src.utils.metrics import histogram, timing
 
 logger = get_logger(__name__)
 
@@ -32,20 +33,19 @@ class QueryOptimizer:
         optimized = query.strip()
 
         # Remove unnecessary whitespace
-        optimized = re.sub(r'\s+', ' ', optimized)
+        optimized = re.sub(r"\s+", " ", optimized)
 
         # Add LIMIT if not present and query looks like it might return many
         # results
-        if 'LIMIT' not in optimized.upper() and 'MATCH' in optimized.upper():
-            if 'RETURN' in optimized.upper():
+        if "LIMIT" not in optimized.upper() and "MATCH" in optimized.upper():
+            if "RETURN" in optimized.upper():
                 # Add LIMIT before RETURN
                 optimized = re.sub(
-                    r'(\s+RETURN\s+)', r'\1LIMIT 100 ', optimized,
-                    flags=re.IGNORECASE
+                    r"(\s+RETURN\s+)", r"\1LIMIT 100 ", optimized, flags=re.IGNORECASE
                 )
             else:
                 # Add LIMIT at the end
-                optimized += ' LIMIT 100'
+                optimized += " LIMIT 100"
 
         # Optimize MATCH patterns
         optimized = self._optimize_match_patterns(optimized)
@@ -69,9 +69,9 @@ class QueryOptimizer:
     def _add_query_hints(self, query: str) -> str:
         """Add performance hints to queries."""
         # Add USE INDEX hints for common patterns
-        if 'MATCH (n:' in query and 'WHERE' in query:
+        if "MATCH (n:" in query and "WHERE" in query:
             # Add index hint for common property lookups
-            query = query.replace('MATCH (n:', 'MATCH (n:')
+            query = query.replace("MATCH (n:", "MATCH (n:")
 
         return query
 
@@ -80,28 +80,25 @@ class QueryOptimizer:
         suggestions: List[str] = []
 
         # Add suggestions based on query analysis
-        if 'LIMIT' not in query.upper():
-            suggestions.append(
-                "Consider adding LIMIT to prevent large result sets"
-            )
+        if "LIMIT" not in query.upper():
+            suggestions.append("Consider adding LIMIT to prevent large result sets")
 
-        if query.count('MATCH') > 3:
+        if query.count("MATCH") > 3:
             suggestions.append(
                 "Query has multiple MATCH clauses - consider breaking into "
                 "smaller queries"
             )
 
-        if 'ORDER BY' in query.upper() and 'LIMIT' not in query.upper():
+        if "ORDER BY" in query.upper() and "LIMIT" not in query.upper():
             suggestions.append(
-                "ORDER BY without LIMIT may be expensive - consider adding "
-                "LIMIT"
+                "ORDER BY without LIMIT may be expensive - consider adding " "LIMIT"
             )
 
         analysis = {
             "original_query": query,
             "optimized_query": self.optimize_cypher_query(query),
             "suggestions": suggestions,
-            "complexity_score": self._calculate_complexity_score(query)
+            "complexity_score": self._calculate_complexity_score(query),
         }
 
         return analysis
@@ -112,16 +109,16 @@ class QueryOptimizer:
         score = 0
 
         # Count various complexity factors
-        score += query.count('MATCH') * 10
-        score += query.count('WHERE') * 5
-        score += query.count('OPTIONAL MATCH') * 15
-        score += query.count('UNION') * 20
-        score += query.count('CASE') * 8
-        score += query.count('WITH') * 5
+        score += query.count("MATCH") * 10
+        score += query.count("WHERE") * 5
+        score += query.count("OPTIONAL MATCH") * 15
+        score += query.count("UNION") * 20
+        score += query.count("CASE") * 8
+        score += query.count("WITH") * 5
 
         # Check for nested patterns
-        if '(' in query and ')' in query:
-            score += query.count('(') * 3
+        if "(" in query and ")" in query:
+            score += query.count("(") * 3
 
         return min(100, score)
 
@@ -140,8 +137,9 @@ class MemoryManager:
 
     def check_memory_usage(self) -> Dict[str, Any]:
         """Check current memory usage and return statistics."""
-        import psutil
         import gc
+
+        import psutil
 
         process = psutil.Process()
         memory_info = process.memory_info()
@@ -162,7 +160,7 @@ class MemoryManager:
             "memory_mb": memory_mb,
             "memory_threshold_mb": self.memory_threshold_mb,
             "needs_cleanup": memory_mb > self.memory_threshold_mb,
-            "last_cleanup": self.last_cleanup
+            "last_cleanup": self.last_cleanup,
         }
 
     def cleanup_if_needed(self) -> bool:
@@ -171,8 +169,8 @@ class MemoryManager:
         memory_stats = self.check_memory_usage()
 
         should_cleanup = (
-            memory_stats["needs_cleanup"] or
-            (current_time - self.last_cleanup) > self.cleanup_interval
+            memory_stats["needs_cleanup"]
+            or (current_time - self.last_cleanup) > self.cleanup_interval
         )
 
         if should_cleanup:

@@ -1,0 +1,178 @@
+[tool.poetry]
+name = "agent-stack"
+version = "0.1.0"
+description = "A modular, multi-layer stack for large-language-model cognitive workflows, built on LangGraph, Ollama, Neo4j, ChromaDB, and FastAPI"
+authors = ["Agent Stack Team"]
+readme = "README.md"
+packages = [{include = "src"}]
+
+[tool.poetry.dependencies]
+python = ">=3.11,<3.14"
+fastapi = "^0.116.1"
+uvicorn = "^0.35.0"
+pydantic = "^2.11.9"
+pydantic-settings = "^2.10.1"
+python-dotenv = "^1.1.1"
+langgraph = "^0.6.7"
+langgraph-checkpoint = "^2.1.1"
+langgraph-prebuilt = "^0.6.4"
+langgraph-sdk = "^0.2.6"
+langsmith = "^0.4.27"
+langchain-core = "^0.3.76"
+neo4j = "^5.28.2"
+chromadb = "^1.0.21"
+ollama = "^0.5.3"
+llama-index = "^0.14.0"
+llama-index-core = "^0.14.1"
+llama-index-embeddings-ollama = "^0.8.3"
+llama-index-embeddings-openai = "^0.5.1"
+llama-index-llms-openai = "^0.5.6"
+llama-index-readers-file = "^0.5.4"
+llama-index-readers-llama-parse = "^0.5.1"
+llama-index-workflows = "^2.2.0"
+llama-parse = "^0.6.54"
+llama-cloud = "^0.1.35"
+llama-cloud-services = "^0.6.54"
+llama-index-cli = "^0.5.1"
+llama-index-indices-managed-llama-cloud = "^0.9.4"
+llama-index-instrumentation = "^0.4.0"
+huggingface-hub = "^0.34.4"
+openai = "^1.107.2"
+requests = "^2.32.5"
+httpx = "^0.28.1"
+aiohttp = "^3.12.15"
+aiofiles = "^24.1.0"
+beautifulsoup4 = "^4.13.5"
+lxml = "^6.0.1"
+python-docx = "^1.2.0"
+pypdf = "^6.0.0"
+unstructured = "^0.18.14"
+unstructured-client = "^0.42.3"
+spacy = "^3.8.7"
+nltk = "^3.9.1"
+numpy = "^2.3.3"
+pandas = "^2.2.3"
+networkx = "^3.5"
+rich = "^14.1.0"
+coloredlogs = "^15.0.1"
+tenacity = "^9.1.2"
+backoff = "^2.2.1"
+cachetools = "^5.5.2"
+psutil = "^7.0.0"
+watchfiles = "^1.1.0"
+websockets = "^15.0.1"
+websocket-client = "^1.8.0"
+sqlalchemy = "^2.0.43"
+prometheus-client = "^0.19.0"
+opentelemetry-api = "^1.37.0"
+opentelemetry-sdk = "^1.37.0"
+opentelemetry-exporter-otlp-proto-grpc = "^1.37.0"
+opentelemetry-exporter-otlp-proto-common = "^1.37.0"
+opentelemetry-proto = "^1.37.0"
+opentelemetry-semantic-conventions = "^0.58b0"
+hvac = "^2.0.0"
+structlog = "^24.1.0"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.4.2"
+pytest-asyncio = "^1.2.0"
+pytest-cov = "^4.1.0"
+pytest-mock = "^3.12.0"
+black = "^24.1.0"
+isort = "^5.13.0"
+flake8 = "^7.0.0"
+mypy = "^1.8.0"
+pre-commit = "^3.6.0"
+pip-audit = "^2.6.0"
+safety = "^3.0.0"
+bandit = "^1.7.5"
+semgrep = "^1.45.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+audit = "pip-audit:main"
+test = "pytest"
+lint = "flake8 src tests"
+format = "black src tests"
+type-check = "mypy src"
+
+[tool.black]
+line-length = 88
+target-version = ['py311']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  # directories
+  \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | venv
+  | _build
+  | buck-out
+  | build
+  | dist
+)/
+'''
+
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+line_length = 88
+known_first_party = ["src"]
+
+[tool.mypy]
+python_version = "3.11"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+warn_unreachable = true
+strict_equality = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "-v --tb=short --strict-markers"
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "integration: marks tests as integration tests",
+    "unit: marks tests as unit tests",
+]
+
+[tool.coverage.run]
+source = ["src"]
+omit = [
+    "*/tests/*",
+    "*/test_*",
+    "*/__pycache__/*",
+    "*/venv/*",
+    "*/.*",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if self.debug:",
+    "if settings.DEBUG",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if 0:",
+    "if __name__ == .__main__.:",
+    "class .*\\bProtocol\\):",
+    "@(abc\\.)?abstractmethod",
+]

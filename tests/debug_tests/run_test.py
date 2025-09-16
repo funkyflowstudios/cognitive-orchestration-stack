@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """Run minimal test and write output to file."""
 
+import os
 import subprocess
 import sys
-import os
 
 # Change to the project directory
 os.chdir(r'D:\Projektit\agent_stack')

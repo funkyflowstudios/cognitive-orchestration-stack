@@ -2,11 +2,12 @@
 
 from __future__ import annotations
 
-import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
 
-from src.orchestration.state import AgentState
+import pytest
+
 from src.orchestration.graph import GRAPH
+from src.orchestration.state import AgentState
 
 
 class TestFullStackIntegration:
@@ -49,6 +50,7 @@ class TestFullStackIntegration:
 
             # Track UI callbacks
             ui_calls = []
+
             def ui_callback(msg: str) -> None:
                 ui_calls.append(msg)
             state.ui = ui_callback
@@ -337,6 +339,7 @@ class TestAgentStateEvolution:
 
             # Track state changes
             state_changes = []
+
             def ui_callback(msg: str) -> None:
                 state_changes.append(f"UI: {msg}")
 

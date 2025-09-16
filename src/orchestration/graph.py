@@ -1,15 +1,18 @@
 # In agent_stack/src/orchestration/graph.py
 
 from __future__ import annotations
+
 from langgraph.graph import StateGraph
-from .state import AgentState
+
+from src.utils.logger import get_logger
+
 from .nodes import (
     planner_node,
+    synthesizer_node,
     tool_executor_node,
     validation_critique_node,
-    synthesizer_node,
 )
-from src.utils.logger import get_logger
+from .state import AgentState
 
 logger = get_logger(__name__)
 

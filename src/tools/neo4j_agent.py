@@ -1,8 +1,11 @@
 # In agent_stack/src/tools/neo4j_agent.py
 
 from __future__ import annotations
+
 import asyncio
+
 from neo4j import GraphDatabase
+
 from src.config import get_settings
 from src.utils.logger import get_logger
 from src.utils.retry import retry
@@ -59,9 +62,7 @@ class Neo4jAgent:
             result = session.run(cypher, parameters or {})
             return [record.data() for record in result]
 
-    async def query_async(
-        self, cypher: str, parameters: dict | None = None
-    ) -> list:
+    async def query_async(self, cypher: str, parameters: dict | None = None) -> list:
         """
         Async version of query method for better performance.
 
@@ -81,10 +82,7 @@ class Neo4jAgent:
         # Run the synchronous query in a thread pool
         loop = asyncio.get_event_loop()
         return await loop.run_in_executor(
-            None,
-            self._execute_query_sync,
-            cypher,
-            parameters or {}
+            None, self._execute_query_sync, cypher, parameters or {}
         )
 
     def _execute_query_sync(self, cypher: str, parameters: dict) -> list:

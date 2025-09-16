@@ -9,15 +9,13 @@ from __future__ import annotations
 from unittest.mock import patch
 
 import pytest
-import pytest_asyncio
 
 from src.orchestration.nodes import (
     planner_node,
-    tool_executor_node_async,
     synthesizer_node,
+    tool_executor_node_async,
 )
 from src.orchestration.state import AgentState
-
 
 # ----------------------------
 # Fixtures

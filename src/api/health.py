@@ -7,9 +7,10 @@ import time
 from typing import Any, Dict
 
 from fastapi import APIRouter, HTTPException
+
 from src.config import get_settings
-from src.tools.neo4j_agent import Neo4jAgent
 from src.tools.chromadb_agent import ChromaDBAgent
+from src.tools.neo4j_agent import Neo4jAgent
 from src.utils.logger import get_logger
 
 logger = get_logger(__name__)
@@ -81,10 +82,9 @@ async def readiness_check() -> Dict[str, Any]:
     # Check Ollama (optional - don't fail if not available)
     try:
         import httpx
+
         async with httpx.AsyncClient() as client:
-            response = await client.get(
-                f"{settings.ollama_host}/api/tags", timeout=5.0
-            )
+            response = await client.get(f"{settings.ollama_host}/api/tags", timeout=5.0)
             if response.status_code == 200:
                 checks["ollama"]["status"] = "healthy"
             else:
@@ -98,7 +98,8 @@ async def readiness_check() -> Dict[str, Any]:
     # Determine overall readiness
     critical_services = ["neo4j", "chromadb"]
     unhealthy_services = [
-        name for name, check in checks.items()
+        name
+        for name, check in checks.items()
         if name in critical_services and check["status"] != "healthy"
     ]
 

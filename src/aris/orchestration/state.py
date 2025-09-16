@@ -4,13 +4,15 @@ Pydantic models for tracking the state of research jobs throughout the
 pipeline.
 """
 
-from pydantic import BaseModel, Field
-from typing import List, Dict, Optional
 from pathlib import Path
+from typing import Dict, List, Optional
+
+from pydantic import BaseModel, Field
 
 
 class ScrapedContent(BaseModel):
     """A reference to scraped content on disk with its validation metadata."""
+
     source_url: str
     local_path: Path
     validation_score: Optional[float] = None
@@ -20,6 +22,7 @@ class ScrapedContent(BaseModel):
 
 class ResearchState(BaseModel):
     """The complete, typed state for a single ARIS research job."""
+
     # Inputs
     topic: str
 
@@ -32,9 +35,7 @@ class ResearchState(BaseModel):
     search_queries: List[str] = Field(default_factory=list)
 
     # Tool Executor Output
-    scraped_content_references: List[ScrapedContent] = Field(
-        default_factory=list
-    )
+    scraped_content_references: List[ScrapedContent] = Field(default_factory=list)
 
     # Synthesizer Output
     synthesized_article_markdown: Optional[str] = None

@@ -5,11 +5,13 @@ from __future__ import annotations
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+
+from src.api.docs import create_openapi_schema
+from src.api.docs import router as docs_router
 from src.api.health import router as health_router
 from src.api.metrics import router as metrics_router
-from src.api.docs import router as docs_router, create_openapi_schema
 from src.utils.logger import get_logger
-from src.utils.metrics import request_count, success_count, error_count
+from src.utils.metrics import error_count, request_count, success_count
 
 logger = get_logger(__name__)
 
@@ -58,6 +60,7 @@ async def track_requests(request, call_next):
         logger.error("Request processing error: %s", e)
         error_count("internal_error")
         raise
+
 
 # Override OpenAPI schema generation
 app.openapi = lambda: create_openapi_schema(app)

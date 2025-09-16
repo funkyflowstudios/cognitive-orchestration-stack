@@ -7,7 +7,7 @@ Contains specialized agents for different research tasks:
 - ScraperAgent: Legacy scraper agent (deprecated)
 """
 
-from .search_agent import WebSearchAgent, SearchAgent
-from .scraper_agent import WebScraperAgent, ScraperAgent
+from .scraper_agent import ScraperAgent, WebScraperAgent
+from .search_agent import SearchAgent, WebSearchAgent
 
 __all__ = ["WebSearchAgent", "WebScraperAgent", "SearchAgent", "ScraperAgent"]

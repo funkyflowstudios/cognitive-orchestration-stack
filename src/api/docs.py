@@ -7,6 +7,7 @@ from __future__ import annotations
 from fastapi import APIRouter, FastAPI
 from fastapi.openapi.utils import get_openapi
 from fastapi.responses import HTMLResponse
+
 from src.utils.logger import get_logger
 
 logger = get_logger(__name__)
@@ -63,30 +64,24 @@ def create_openapi_schema(app: FastAPI) -> dict:
 
     # Add server information
     openapi_schema["servers"] = [
-        {
-            "url": "http://localhost:8000",
-            "description": "Development server"
-        },
+        {"url": "http://localhost:8000", "description": "Development server"},
         {
             "url": "https://api.cognitive-stack.example.com",
-            "description": "Production server"
-        }
+            "description": "Production server",
+        },
     ]
 
     # Add tags for better organization
     openapi_schema["tags"] = [
         {
             "name": "health",
-            "description": "Health monitoring endpoints for production deployment"
+            "description": "Health monitoring endpoints for production deployment",
         },
-        {
-            "name": "metrics",
-            "description": "Performance metrics and monitoring"
-        },
+        {"name": "metrics", "description": "Performance metrics and monitoring"},
         {
             "name": "documentation",
-            "description": "API documentation and schema information"
-        }
+            "description": "API documentation and schema information",
+        },
     ]
 
     app.openapi_schema = openapi_schema

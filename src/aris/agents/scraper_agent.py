@@ -3,10 +3,11 @@
 Handles content extraction and validation from web pages.
 """
 
-from typing import List, Dict, Any, Optional
 import logging
 import sys
 from pathlib import Path
+from typing import Any, Dict, List, Optional
+
 import requests
 from bs4 import BeautifulSoup
 from unstructured.partition.html import partition_html
@@ -31,10 +32,10 @@ class WebScraperAgent:
         """Scrapes a URL, parses its content to Markdown, and saves it."""
         print(f"-> Scraping: {url}")
         headers = {
-            'User-Agent': (
-                'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
-                'AppleWebKit/537.36 (KHTML, like Gecko) '
-                'Chrome/91.0.4472.124 Safari/537.36'
+            "User-Agent": (
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                "AppleWebKit/537.36 (KHTML, like Gecko) "
+                "Chrome/91.0.4472.124 Safari/537.36"
             )
         }
         response = requests.get(url, headers=headers, timeout=20)
@@ -42,9 +43,7 @@ class WebScraperAgent:
         elements = partition_html(text=response.text)
         content = "\n\n".join([str(el) for el in elements])
 
-        safe_filename = (
-            "".join(c if c.isalnum() else "_" for c in url)[:100] + ".md"
-        )
+        safe_filename = "".join(c if c.isalnum() else "_" for c in url)[:100] + ".md"
         output_path = output_dir / safe_filename
         output_path.write_text(content, encoding="utf-8")
         return output_path
@@ -61,12 +60,13 @@ class ScraperAgent:
         """
         self.timeout = timeout
         self.session = requests.Session()
-        self.session.headers.update({
-            'User-Agent': (
-                'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
-                'AppleWebKit/537.36'
-            )
-        })
+        self.session.headers.update(
+            {
+                "User-Agent": (
+                    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) " "AppleWebKit/537.36"
+                )
+            }
+        )
 
     def scrape_url(self, url: str) -> Optional[Dict[str, Any]]:
         """Scrape content from a single URL.
@@ -84,29 +84,26 @@ class ScraperAgent:
             response.raise_for_status()
 
             # Parse HTML content
-            soup = BeautifulSoup(response.content, 'html.parser')
+            soup = BeautifulSoup(response.content, "html.parser")
 
             # Extract basic metadata
-            title = soup.find('title')
-            title_text = (
-                title.get_text().strip() if title else "No title found"
-            )
+            title = soup.find("title")
+            title_text = title.get_text().strip() if title else "No title found"
 
             # Use unstructured to extract clean text
             elements = partition_html(text=response.text)
             content_text = "\n".join([str(element) for element in elements])
 
             result = {
-                'url': url,
-                'title': title_text,
-                'content': content_text,
-                'status_code': response.status_code,
-                'content_length': len(content_text)
+                "url": url,
+                "title": title_text,
+                "content": content_text,
+                "status_code": response.status_code,
+                "content_length": len(content_text),
             }
 
             logger.info(
-                f"Successfully scraped {url}: "
-                f"{len(content_text)} characters"
+                f"Successfully scraped {url}: " f"{len(content_text)} characters"
             )
             return result
 
@@ -143,7 +140,7 @@ class ScraperAgent:
         validation_notes = []
 
         # Check content length
-        content_length = content.get('content_length', 0)
+        content_length = content.get("content_length", 0)
         if content_length > 1000:
             validation_score += 0.3
         elif content_length > 500:
@@ -152,13 +149,13 @@ class ScraperAgent:
             validation_notes.append("Content too short")
 
         # Check for title
-        if content.get('title') and content['title'] != "No title found":
+        if content.get("title") and content["title"] != "No title found":
             validation_score += 0.2
         else:
             validation_notes.append("No valid title found")
 
         # Check for meaningful content (basic heuristic)
-        content_text = content.get('content', '')
+        content_text = content.get("content", "")
         if len(content_text.split()) > 100:
             validation_score += 0.3
         else:
@@ -166,19 +163,16 @@ class ScraperAgent:
 
         # Check for common content indicators
         content_lower = content_text.lower()
-        keywords = ['article', 'research', 'study', 'analysis']
+        keywords = ["article", "research", "study", "analysis"]
         if any(keyword in content_lower for keyword in keywords):
             validation_score += 0.2
         else:
-            validation_notes.append(
-                "No clear research content indicators"
-            )
+            validation_notes.append("No clear research content indicators")
 
-        content['validation_score'] = validation_score
-        content['validation_notes'] = (
-            "; ".join(validation_notes) if validation_notes
-            else "Content appears valid"
+        content["validation_score"] = validation_score
+        content["validation_notes"] = (
+            "; ".join(validation_notes) if validation_notes else "Content appears valid"
         )
-        content['is_validated'] = validation_score >= 0.6
+        content["is_validated"] = validation_score >= 0.6
 
         return content

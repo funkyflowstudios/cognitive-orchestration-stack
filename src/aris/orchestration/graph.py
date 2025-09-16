@@ -3,13 +3,16 @@
 LangGraph workflow definition for the research pipeline.
 """
 
-from typing import Dict, Any, Optional
 import logging
-from langgraph.graph import StateGraph, END
+from typing import Any, Dict, Optional
+
+from langgraph.graph import END, StateGraph
+
+from .nodes import Planner, Synthesizer, ToolExecutor, Validator
+from .state import ResearchState
+
 # from langgraph.checkpoint.memory import MemorySaver  # Unused import
 
-from .state import ResearchState
-from .nodes import Planner, ToolExecutor, Validator, Synthesizer
 
 logger = logging.getLogger(__name__)
 
@@ -45,9 +48,7 @@ def create_research_graph() -> StateGraph:
     return create_graph()
 
 
-def run_research_job(
-    topic: str, job_id: Optional[str] = None
-) -> Dict[str, Any]:
+def run_research_job(topic: str, job_id: Optional[str] = None) -> Dict[str, Any]:
     """Run a complete research job using the ARIS workflow.
 
     Args:
@@ -63,15 +64,13 @@ def run_research_job(
     if job_id is None:
         job_id = str(uuid.uuid4())
 
-    logger.info(
-        f"Starting research job {job_id} for topic: {topic}"
-    )
+    logger.info(f"Starting research job {job_id} for topic: {topic}")
 
     # Create initial state
     initial_state = ResearchState(
         topic=topic,
         job_id=job_id,
-        job_scratch_dir=Path("")  # Will be set by initialize_job
+        job_scratch_dir=Path(""),  # Will be set by initialize_job
     )
 
     # Create and run the graph
@@ -87,14 +86,18 @@ def run_research_job(
             "status": "completed",
             "output_path": (
                 str(final_state.final_output_path)
-                if final_state.final_output_path else None
+                if final_state.final_output_path
+                else None
             ),
             "sources_found": len(final_state.scraped_content_references),
-            "validated_sources": len([
-                ref for ref in final_state.scraped_content_references
-                if ref.is_validated
-            ]),
-            "error": final_state.error_message
+            "validated_sources": len(
+                [
+                    ref
+                    for ref in final_state.scraped_content_references
+                    if ref.is_validated
+                ]
+            ),
+            "error": final_state.error_message,
         }
 
         logger.info(f"Research job {job_id} completed successfully")
@@ -102,9 +105,4 @@ def run_research_job(
 
     except Exception as e:
         logger.error(f"Research job {job_id} failed: {e}")
-        return {
-            "job_id": job_id,
-            "topic": topic,
-            "status": "failed",
-            "error": str(e)
-        }
+        return {"job_id": job_id, "topic": topic, "status": "failed", "error": str(e)}

@@ -1,17 +1,20 @@
 from __future__ import annotations
+
 import textwrap
+
+import ollama
+
 from src.config import get_settings
 from src.orchestration.state import AgentState
 from src.tools.chromadb_agent import ChromaDBAgent
 from src.tools.neo4j_agent import Neo4jAgent
 from src.utils.logger import get_logger
-from src.utils.metrics import timed, increment
+from src.utils.metrics import increment, timed
 from src.utils.schema_validator import (
     SafeJSONParser,
     SchemaValidationError,
     sanitize_user_input,
 )
-import ollama
 
 logger = get_logger(__name__)
 settings = get_settings()
@@ -45,10 +48,12 @@ def _get_chromadb_agent():
         chromadb_agent = ChromaDBAgent()
     return chromadb_agent
 
+
 # --- TOOL DEFINITIONS ---
 
 
 # In agent_stack/src/orchestration/nodes.py
+
 
 @timed("vector_search_duration")
 def vector_search(state: AgentState) -> str:
@@ -104,6 +109,7 @@ TOOL_MAP = {
 
 # In agent_stack/src/orchestration/nodes.py
 
+
 @timed("planner_duration")
 def planner_node(state: AgentState) -> dict:
     """
@@ -126,14 +132,14 @@ def planner_node(state: AgentState) -> dict:
             "- 'graph_search': relationship queries.\n"
             "- 'vector_search_async': async version of vector search.\n"
             "- 'graph_search_async': async version of graph search.\n\n"
-            f"User's query: \"{sanitized_query}\"\n\n"
+            f'User\'s query: "{sanitized_query}"\n\n'
             "IMPORTANT: Return ONLY valid JSON. No explanations, no markdown, "
             "no additional text. Just the JSON object.\n\n"
             "Examples of valid responses:\n"
-            "{\"plan\": [\"vector_search\"]}\n"
-            "{\"plan\": [\"graph_search\"]}\n"
-            "{\"plan\": [\"vector_search\", \"graph_search\"]}\n"
-            "{\"plan\": [\"vector_search_async\", \"graph_search_async\"]}\n\n"
+            '{"plan": ["vector_search"]}\n'
+            '{"plan": ["graph_search"]}\n'
+            '{"plan": ["vector_search", "graph_search"]}\n'
+            '{"plan": ["vector_search_async", "graph_search_async"]}\n\n'
             "Your response:"
         )
     )
@@ -142,23 +148,15 @@ def planner_node(state: AgentState) -> dict:
     for attempt in range(max_retries):
         try:
             # Call Ollama client directly (synchronous)
-            response = _get_ollama_client().generate(
-                settings.ollama_model,
-                prompt
-            )
+            response = _get_ollama_client().generate(settings.ollama_model, prompt)
 
             # Log the raw response for debugging
-            raw_response = response.get('response', '')
-            logger.debug(
-                "LLM raw response (attempt %d): %s",
-                attempt + 1, raw_response
-            )
+            raw_response = response.get("response", "")
+            logger.debug("LLM raw response (attempt %d): %s", attempt + 1, raw_response)
 
             # Use safe JSON parser with schema validation
             try:
-                plan_data = SafeJSONParser.safe_parse_json(
-                    raw_response, "planner"
-                )
+                plan_data = SafeJSONParser.safe_parse_json(raw_response, "planner")
                 plan = plan_data["plan"]
 
                 if state.ui:
@@ -169,23 +167,19 @@ def planner_node(state: AgentState) -> dict:
 
             except SchemaValidationError as e:
                 logger.error(
-                    "Schema validation error on attempt %d: %s. "
-                    "Raw response: %s",
-                    attempt + 1, e, raw_response
+                    "Schema validation error on attempt %d: %s. " "Raw response: %s",
+                    attempt + 1,
+                    e,
+                    raw_response,
                 )
                 if attempt == max_retries - 1:
-                    logger.error(
-                        "All retry attempts failed. Using fallback plan."
-                    )
+                    logger.error("All retry attempts failed. Using fallback plan.")
                     return {"plan": ["vector_search"]}
                 # Continue to next retry attempt
                 continue
 
         except Exception as e:
-            logger.error(
-                "Unexpected error on attempt %d: %s",
-                attempt + 1, e
-            )
+            logger.error("Unexpected error on attempt %d: %s", attempt + 1, e)
             if attempt == max_retries - 1:
                 logger.error("All retry attempts failed. Using fallback plan.")
                 return {"plan": ["vector_search"]}
@@ -202,6 +196,7 @@ def tool_executor_node(state: AgentState) -> dict:
     """Synchronous version of tool executor."""
     import asyncio
     import concurrent.futures
+
     tool_outputs = []
 
     for tool_name in state.plan:
@@ -216,12 +211,8 @@ def tool_executor_node(state: AgentState) -> dict:
                     try:
                         asyncio.get_running_loop()
                         # We're in an async context, use thread pool
-                        with concurrent.futures.ThreadPoolExecutor() as (
-                            executor
-                        ):
-                            future = executor.submit(
-                                asyncio.run, output
-                            )
+                        with concurrent.futures.ThreadPoolExecutor() as (executor):
+                            future = executor.submit(asyncio.run, output)
                             output = future.result()
                     except RuntimeError:
                         # No event loop running, create a new one
@@ -230,8 +221,7 @@ def tool_executor_node(state: AgentState) -> dict:
                                 output = asyncio.run(output)
                         except Exception as e:
                             logger.error(
-                                "Error running async tool %s: %s",
-                                tool_name, e
+                                "Error running async tool %s: %s", tool_name, e
                             )
                             output = f"Error executing {tool_name}: {str(e)}"
                 tool_outputs.append(output)
@@ -304,6 +294,7 @@ def validation_critique_node(state: AgentState) -> dict:
 
 # In agent_stack/src/orchestration/nodes.py
 
+
 @timed("synthesizer_duration")
 def synthesizer_node(state: AgentState) -> dict:
     logger.info("Synthesizing final response.")
@@ -325,11 +316,8 @@ def synthesizer_node(state: AgentState) -> dict:
     )
     # Call Ollama client directly (synchronous)
     try:
-        response = _get_ollama_client().generate(
-            settings.ollama_model,
-            prompt
-        )
-        final_response = response['response']
+        response = _get_ollama_client().generate(settings.ollama_model, prompt)
+        final_response = response["response"]
     except Exception as e:
         logger.error("Error in synthesizer: %s", e)
         final_response = f"Error generating response: {str(e)}"

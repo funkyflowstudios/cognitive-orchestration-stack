@@ -7,14 +7,14 @@ from __future__ import annotations
 import argparse
 
 from prompt_toolkit import PromptSession
-from rich.markdown import Markdown
-from src.ui.focus import FocusController
 from prompt_toolkit.styles import Style
+from rich.markdown import Markdown
 
 from src.orchestration.graph import GRAPH
 from src.orchestration.state import AgentState
-from src.utils.logger import get_logger
 from src.ui.animations import disintegration_frames, run_animation
+from src.ui.focus import FocusController
+from src.utils.logger import get_logger
 
 logger = get_logger(__name__)
 
@@ -49,9 +49,7 @@ class ChimeraCLI:  # noqa: D101
                 if question.lower() in {"exit", "quit"}:
                     # Smooth fade-out without terminal flooding
                     run_animation(
-                        disintegration_frames(),
-                        frame_duration=0.03,
-                        repeat=False
+                        disintegration_frames(), frame_duration=0.03, repeat=False
                     )
                     print("Goodbye. ✨")
                     break
@@ -81,6 +79,7 @@ class ChimeraCLI:  # noqa: D101
                     focus.set_executing(tool)
                 elif msg == "synth_start":
                     focus.set_synthesizing()
+
             state = AgentState(query=question, ui=ui_cb)
             final_state = GRAPH.invoke(state)
             focus.set_answer(Markdown(final_state.get("response", "")))

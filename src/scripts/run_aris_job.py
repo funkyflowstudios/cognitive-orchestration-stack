@@ -6,10 +6,10 @@ Command-line interface for running ARIS research jobs.
 """
 
 import argparse
-import uuid
-from pathlib import Path
 import shutil
 import sys
+import uuid
+from pathlib import Path
 
 # Add src to Python path for imports
 sys.path.append(str(Path(__file__).parent.parent))
@@ -21,9 +21,7 @@ from aris.orchestration.state import ResearchState  # noqa: E402
 def main():
     """Main function to run an ARIS research job."""
     parser = argparse.ArgumentParser(description="Run an ARIS research job.")
-    parser.add_argument(
-        "--topic", type=str, required=True, help="The research topic."
-    )
+    parser.add_argument("--topic", type=str, required=True, help="The research topic.")
     args = parser.parse_args()
 
     job_id = str(uuid.uuid4())
@@ -33,9 +31,7 @@ def main():
     print(f"--- Starting Job {job_id} for topic: '{args.topic}' ---")
 
     initial_state = ResearchState(
-        topic=args.topic,
-        job_id=job_id,
-        job_scratch_dir=job_scratch_dir
+        topic=args.topic, job_id=job_id, job_scratch_dir=job_scratch_dir
     )
 
     final_state = aris_graph.invoke(initial_state)
@@ -53,17 +49,12 @@ def main():
             f"{final_state.topic.replace(' ', '_')}_{job_id}.md"
         )
         with open(final_output_path, "w", encoding="utf-8") as f:
-            f.write(
-                final_state.synthesized_article_markdown
-                or "No content generated"
-            )
+            f.write(final_state.synthesized_article_markdown or "No content generated")
         print(f"Article saved to: {final_output_path}")
 
     # Clean up scratch directory
     shutil.rmtree(job_scratch_dir)
-    print(
-        f"--- Job {job_id} Finished. Cleaned up scratch directory. ---"
-    )
+    print(f"--- Job {job_id} Finished. Cleaned up scratch directory. ---")
 
 
 if __name__ == "__main__":

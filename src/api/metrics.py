@@ -6,8 +6,9 @@ from __future__ import annotations
 
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import HTMLResponse
-from src.utils.metrics import get_metrics, reset_metrics
+
 from src.utils.logger import get_logger
+from src.utils.metrics import get_metrics, reset_metrics
 
 logger = get_logger(__name__)
 router = APIRouter(prefix="/metrics", tags=["metrics"])
@@ -20,9 +21,7 @@ async def get_metrics_endpoint():
         return get_metrics()
     except Exception as e:
         logger.error("Error getting metrics: %s", e)
-        raise HTTPException(
-            status_code=500, detail=f"Error getting metrics: {str(e)}"
-        )
+        raise HTTPException(status_code=500, detail=f"Error getting metrics: {str(e)}")
 
 
 @router.get("/dashboard")
@@ -32,7 +31,8 @@ async def get_metrics_dashboard():
         metrics = get_metrics()
     except Exception as e:
         logger.error("Error getting metrics for dashboard: %s", e)
-        return HTMLResponse(content=f"""
+        return HTMLResponse(
+            content=f"""
         <!DOCTYPE html>
         <html>
         <head><title>Error - Metrics Dashboard</title></head>
@@ -41,13 +41,15 @@ async def get_metrics_dashboard():
             <p>Failed to load metrics: {str(e)}</p>
         </body>
         </html>
-        """, status_code=500)
+        """,
+            status_code=500,
+        )
 
     # Safely get system health data
-    system_health = metrics.get('system_health', {})
-    counters = metrics.get('counters', {})
-    timers = metrics.get('timers', {})
-    error_counts = metrics.get('error_counts', {})
+    system_health = metrics.get("system_health", {})
+    counters = metrics.get("counters", {})
+    timers = metrics.get("timers", {})
+    error_counts = metrics.get("error_counts", {})
 
     # Generate HTML dashboard
     html_content = f"""
@@ -151,7 +153,9 @@ async def reset_metrics_endpoint():
         return {"message": "Metrics reset successfully"}
     except Exception as e:
         logger.error("Failed to reset metrics: %s", e)
-        raise HTTPException(status_code=500, detail={"error": f"Failed to reset metrics: {str(e)}"})
+        raise HTTPException(
+            status_code=500, detail={"error": f"Failed to reset metrics: {str(e)}"}
+        )
 
 
 def get_health_score():
@@ -159,9 +163,9 @@ def get_health_score():
     metrics = get_metrics()
 
     # Calculate health score
-    success_rate = metrics.get('system_health', {}).get('success_rate', 1.0)
-    error_count = sum(metrics.get('error_counts', {}).values())
-    total_requests = metrics.get('system_health', {}).get('total_requests', 1)
+    success_rate = metrics.get("system_health", {}).get("success_rate", 1.0)
+    error_count = sum(metrics.get("error_counts", {}).values())
+    total_requests = metrics.get("system_health", {}).get("total_requests", 1)
 
     # Health score calculation (0-100)
     health_score = 100
@@ -174,11 +178,15 @@ def get_health_score():
 
     return {
         "health_score": max(0, health_score),
-        "status": "healthy" if health_score > 80 else "degraded" if health_score > 50 else "unhealthy",
+        "status": (
+            "healthy"
+            if health_score > 80
+            else "degraded" if health_score > 50 else "unhealthy"
+        ),
         "details": {
             "request_success_rate": success_rate,
-            "error_rate": error_count / max(total_requests, 1)
-        }
+            "error_rate": error_count / max(total_requests, 1),
+        },
     }
 
 
@@ -189,4 +197,6 @@ async def get_health_metrics():
         return get_health_score()
     except Exception as e:
         logger.error("Error getting health metrics: %s", e)
-        raise HTTPException(status_code=500, detail=f"Error getting health metrics: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Error getting health metrics: {str(e)}"
+        )

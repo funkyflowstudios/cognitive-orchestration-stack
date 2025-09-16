@@ -3,8 +3,8 @@
 
 from __future__ import annotations
 
-import time
 import threading
+import time
 from collections import defaultdict, deque
 from functools import wraps
 from typing import Any, Callable, TypeVar
@@ -29,7 +29,7 @@ _metrics: dict[str, Any] = {
         "total_requests": 0,
         "successful_requests": 0,
         "failed_requests": 0,
-    }
+    },
 }
 
 
@@ -46,9 +46,7 @@ def timing(timer_name: str, duration_ms: float) -> None:
         _metrics["timers"][timer_name].append(duration_ms)
         # Keep only last 1000 measurements to prevent memory bloat
         if len(_metrics["timers"][timer_name]) > 1000:
-            _metrics["timers"][timer_name] = (
-                _metrics["timers"][timer_name][-1000:]
-            )
+            _metrics["timers"][timer_name] = _metrics["timers"][timer_name][-1000:]
         logger.debug("Timer %s recorded: %.2fms", timer_name, duration_ms)
 
 
@@ -65,9 +63,9 @@ def histogram(histogram_name: str, value: float) -> None:
         _metrics["histograms"][histogram_name].append(value)
         # Keep only last 1000 measurements
         if len(_metrics["histograms"][histogram_name]) > 1000:
-            _metrics["histograms"][histogram_name] = (
-                _metrics["histograms"][histogram_name][-1000:]
-            )
+            _metrics["histograms"][histogram_name] = _metrics["histograms"][
+                histogram_name
+            ][-1000:]
 
 
 def error_count(error_type: str, count: int = 1) -> None:
@@ -103,7 +101,7 @@ def get_metrics() -> dict[str, Any]:
         "histograms": {},
         "error_counts": dict(metrics["error_counts"]),
         "system_health": metrics["system_health"].copy(),
-        "performance_summary": {}
+        "performance_summary": {},
     }
 
     # Calculate timer statistics
@@ -132,9 +130,7 @@ def get_metrics() -> dict[str, Any]:
     # Calculate system health metrics
     total_requests = metrics["system_health"]["total_requests"]
     if total_requests > 0:
-        success_rate = (
-            metrics["system_health"]["successful_requests"] / total_requests
-        )
+        success_rate = metrics["system_health"]["successful_requests"] / total_requests
         computed_metrics["system_health"]["success_rate"] = success_rate
         computed_metrics["system_health"]["uptime_seconds"] = (
             time.time() - metrics["system_health"]["uptime_start"]
@@ -178,7 +174,7 @@ def reset_metrics() -> None:
                 "total_requests": 0,
                 "successful_requests": 0,
                 "failed_requests": 0,
-            }
+            },
         }
     logger.info("Metrics reset")
 
@@ -200,6 +196,6 @@ def initialize_metrics() -> None:
                     "total_requests": 0,
                     "successful_requests": 0,
                     "failed_requests": 0,
-                }
+                },
             }
     logger.info("Metrics system initialized")

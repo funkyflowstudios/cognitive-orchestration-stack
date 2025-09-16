@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
 """Verify the fix works by running a simple test."""
 
+import os
 import subprocess
 import sys
-import os
-
 
 
 def run_test_with_timeout():
@@ -34,7 +33,6 @@ def run_test_with_timeout():
         with open('fix_verification.txt', 'w') as f:
             f.write(f"Error running test: {e}\n")
         return False
-
 
 
 if __name__ == "__main__":

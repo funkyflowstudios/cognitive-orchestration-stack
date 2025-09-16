@@ -2,6 +2,7 @@
 """Minimal test to identify hanging issue."""
 
 import sys
+
 sys.path.insert(0, '.')
 
 print("Starting minimal test...")

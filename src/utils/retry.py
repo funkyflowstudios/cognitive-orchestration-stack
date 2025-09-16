@@ -10,7 +10,8 @@ from __future__ import annotations
 from functools import wraps
 from typing import Any, Callable, TypeVar
 
-from tenacity import retry as _retry, stop_after_attempt, wait_exponential
+from tenacity import retry as _retry
+from tenacity import stop_after_attempt, wait_exponential
 
 _R = TypeVar("_R")
 

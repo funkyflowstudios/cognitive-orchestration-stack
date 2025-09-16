@@ -2,6 +2,7 @@
 """Test without importing graph module."""
 
 import sys
+
 sys.path.insert(0, '.')
 
 print("Testing without graph import...")
