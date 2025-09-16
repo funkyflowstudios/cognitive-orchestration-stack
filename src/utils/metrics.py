@@ -7,7 +7,7 @@ import time
 import threading
 from collections import defaultdict, deque
 from functools import wraps
-from typing import Any, Callable, TypeVar, Dict, List
+from typing import Any, Callable, TypeVar
 
 from src.utils.logger import get_logger
 
@@ -46,7 +46,9 @@ def timing(timer_name: str, duration_ms: float) -> None:
         _metrics["timers"][timer_name].append(duration_ms)
         # Keep only last 1000 measurements to prevent memory bloat
         if len(_metrics["timers"][timer_name]) > 1000:
-            _metrics["timers"][timer_name] = _metrics["timers"][timer_name][-1000:]
+            _metrics["timers"][timer_name] = (
+                _metrics["timers"][timer_name][-1000:]
+            )
         logger.debug("Timer %s recorded: %.2fms", timer_name, duration_ms)
 
 
@@ -63,7 +65,9 @@ def histogram(histogram_name: str, value: float) -> None:
         _metrics["histograms"][histogram_name].append(value)
         # Keep only last 1000 measurements
         if len(_metrics["histograms"][histogram_name]) > 1000:
-            _metrics["histograms"][histogram_name] = _metrics["histograms"][histogram_name][-1000:]
+            _metrics["histograms"][histogram_name] = (
+                _metrics["histograms"][histogram_name][-1000:]
+            )
 
 
 def error_count(error_type: str, count: int = 1) -> None:
@@ -128,9 +132,13 @@ def get_metrics() -> dict[str, Any]:
     # Calculate system health metrics
     total_requests = metrics["system_health"]["total_requests"]
     if total_requests > 0:
-        success_rate = metrics["system_health"]["successful_requests"] / total_requests
+        success_rate = (
+            metrics["system_health"]["successful_requests"] / total_requests
+        )
         computed_metrics["system_health"]["success_rate"] = success_rate
-        computed_metrics["system_health"]["uptime_seconds"] = time.time() - metrics["system_health"]["uptime_start"]
+        computed_metrics["system_health"]["uptime_seconds"] = (
+            time.time() - metrics["system_health"]["uptime_start"]
+        )
 
     return computed_metrics
 
