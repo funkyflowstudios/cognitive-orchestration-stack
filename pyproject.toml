@@ -2,8 +2,9 @@
 name = "agent-stack"
 version = "0.1.0"
 description = "A modular, multi-layer stack for large-language-model cognitive workflows, built on LangGraph, Ollama, Neo4j, ChromaDB, and FastAPI"
-authors = ["Agent Stack Team"]
+authors = ["funkyflowstudios"]
 readme = "README.md"
+license = "All Rights Reserved"
 packages = [{include = "src"}]
 
 [tool.poetry.dependencies]

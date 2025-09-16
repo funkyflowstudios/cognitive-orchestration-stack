@@ -324,3 +324,13 @@ The system supports multiple environments with automatic configuration loading:
 - **Development**: Uses `config/dev.env` with debug logging
 - **Production**: Uses `config/prod.env` with JSON structured logging and Vault integration
 - **Custom**: Set `APP_ENV` to load `config/{env}.env`
+
+## License
+
+This project is licensed under an All Rights Reserved License. 
+
+**Commercial Use Restrictions**: This software is provided for personal, educational, and non-commercial use only. Any commercial use, including selling, licensing, or distributing the software for commercial purposes, requires explicit written permission from the copyright owner.
+
+For commercial use permissions, please contact funkyflowstudios.
+
+See the [LICENSE](LICENSE) file for full details.
