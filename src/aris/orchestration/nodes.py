@@ -4,9 +4,9 @@ Individual processing nodes for the research pipeline.
 """
 
 import yaml
-from pathlib import Path
 import tempfile
 import sys
+from pathlib import Path
 
 # Add src to path for imports
 sys.path.append(str(Path(__file__).parent.parent.parent))
@@ -15,9 +15,13 @@ from .state import ResearchState, ScrapedContent
 from ..agents.search_agent import WebSearchAgent
 from ..agents.scraper_agent import WebScraperAgent
 
-# Import utilities using sys.path
-from utils.logger import get_logger
-from config import get_settings
+try:
+    from utils.logger import get_logger
+    from config import get_settings
+except ImportError:
+    from src.utils.logger import get_logger
+    from src.config import get_settings
+
 import ollama
 
 logger = get_logger(__name__)
@@ -41,12 +45,16 @@ class Planner:
     @staticmethod
     def run(state: ResearchState) -> ResearchState:
         print("--- Node: Planner ---")
-        prompt = f"""You are a world-class research analyst. Create a structured research plan for the topic: "{state.topic}".
+        prompt = (
+            f"""You are a world-class research analyst. Create a structured """
+            f"""research plan for the topic: "{state.topic}".
         Generate a JSON object with two keys:
         1. "research_plan": A concise, step-by-step plan.
-        2. "search_queries": A list of 4 high-quality, diverse search engine queries to execute this plan.
+        2. "search_queries": A list of 4 high-quality, diverse search engine
+           queries to execute this plan.
         Return ONLY the raw JSON object.
         """
+        )
 
         try:
             response = _get_ollama_client().generate(
