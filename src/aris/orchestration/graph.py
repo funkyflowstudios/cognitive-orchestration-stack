@@ -9,16 +9,31 @@ from langgraph.graph import StateGraph, END
 from langgraph.checkpoint.memory import MemorySaver
 
 from .state import ResearchState
-from .nodes import (
-    initialize_job,
-    plan_research,
-    execute_search,
-    scrape_content,
-    synthesize_content,
-    cleanup_job
-)
+from .nodes import Planner, ToolExecutor, Validator, Synthesizer
 
 logger = logging.getLogger(__name__)
+
+
+def create_graph():
+    """Creates the research graph."""
+    graph = StateGraph(ResearchState)
+
+    graph.add_node("planner", Planner.run)
+    graph.add_node("tool_executor", ToolExecutor.run)
+    graph.add_node("validator", Validator.run)
+    graph.add_node("synthesizer", Synthesizer.run)
+
+    graph.set_entry_point("planner")
+    graph.add_edge("planner", "tool_executor")
+    graph.add_edge("tool_executor", "validator")
+    graph.add_edge("validator", "synthesizer")
+    graph.add_edge("synthesizer", END)
+
+    return graph.compile()
+
+
+# Create the graph instance
+aris_graph = create_graph()
 
 
 def create_research_graph() -> StateGraph:
@@ -27,35 +42,7 @@ def create_research_graph() -> StateGraph:
     Returns:
         Configured StateGraph for research workflow
     """
-    logger.info("Creating ARIS research workflow graph")
-
-    # Create the state graph
-    workflow = StateGraph(ResearchState)
-
-    # Add nodes
-    workflow.add_node("initialize", initialize_job)
-    workflow.add_node("plan", plan_research)
-    workflow.add_node("search", execute_search)
-    workflow.add_node("scrape", scrape_content)
-    workflow.add_node("synthesize", synthesize_content)
-    workflow.add_node("cleanup", cleanup_job)
-
-    # Define the workflow edges
-    workflow.set_entry_point("initialize")
-
-    workflow.add_edge("initialize", "plan")
-    workflow.add_edge("plan", "search")
-    workflow.add_edge("search", "scrape")
-    workflow.add_edge("scrape", "synthesize")
-    workflow.add_edge("synthesize", "cleanup")
-    workflow.add_edge("cleanup", END)
-
-    # Compile the graph
-    memory = MemorySaver()
-    compiled_graph = workflow.compile(checkpointer=memory)
-
-    logger.info("ARIS research workflow graph created successfully")
-    return compiled_graph
+    return create_graph()
 
 
 def run_research_job(

@@ -1,105 +1,60 @@
 #!/usr/bin/env python3
-"""ARIS Job Runner Script
+"""
+ARIS Research Job Runner
 
 Command-line interface for running ARIS research jobs.
 """
 
 import argparse
-import logging
-import sys
+import uuid
 from pathlib import Path
+import shutil
+import sys
 
-# Add src to path for imports
-sys.path.insert(0, str(Path(__file__).parent.parent))
+# Add src to Python path for imports
+sys.path.append(str(Path(__file__).parent.parent))
 
-from aris.orchestration.graph import run_research_job
-
-
-def setup_logging(verbose: bool = False) -> None:
-    """Set up logging configuration.
-
-    Args:
-        verbose: Whether to enable verbose logging
-    """
-    level = logging.DEBUG if verbose else logging.INFO
-    logging.basicConfig(
-        level=level,
-        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-        handlers=[
-            logging.StreamHandler(),
-            logging.FileHandler('aris_job.log')
-        ]
-    )
+from aris.orchestration.graph import aris_graph
+from aris.orchestration.state import ResearchState
 
 
 def main():
-    """Main entry point for the ARIS job runner."""
-    parser = argparse.ArgumentParser(
-        description="Run an ARIS research job",
-        formatter_class=argparse.RawDescriptionHelpFormatter,
-        epilog="""
-Examples:
-  python run_aris_job.py "Machine Learning in Healthcare"
-  python run_aris_job.py "Python Best Practices" --job-id custom-job-123
-  python run_aris_job.py "Data Science" --verbose
-        """
-    )
-
-    parser.add_argument(
-        "topic",
-        help="The research topic to investigate"
-    )
-
-    parser.add_argument(
-        "--job-id",
-        help="Custom job ID (will be auto-generated if not provided)"
-    )
-
-    parser.add_argument(
-        "--verbose", "-v",
-        action="store_true",
-        help="Enable verbose logging"
-    )
-
+    """Main function to run an ARIS research job."""
+    parser = argparse.ArgumentParser(description="Run an ARIS research job.")
+    parser.add_argument("--topic", type=str, required=True, help="The research topic.")
     args = parser.parse_args()
 
-    # Set up logging
-    setup_logging(args.verbose)
-    logger = logging.getLogger(__name__)
+    job_id = str(uuid.uuid4())
+    job_scratch_dir = Path(f"./scratch/{job_id}")
+    job_scratch_dir.mkdir(parents=True, exist_ok=True)
 
-    try:
-        # Run the research job
-        logger.info(f"Starting ARIS research job for topic: {args.topic}")
-        result = run_research_job(args.topic, args.job_id)
+    print(f"--- Starting Job {job_id} for topic: '{args.topic}' ---")
 
-        # Print results
-        print("\n" + "="*50)
-        print("ARIS RESEARCH JOB COMPLETED")
-        print("="*50)
-        print(f"Job ID: {result['job_id']}")
-        print(f"Topic: {result['topic']}")
-        print(f"Status: {result['status']}")
+    initial_state = ResearchState(
+        topic=args.topic,
+        job_id=job_id,
+        job_scratch_dir=job_scratch_dir
+    )
 
-        if result['status'] == 'completed':
-            print(f"Output Path: {result['output_path']}")
-            print(f"Sources Found: {result['sources_found']}")
-            print(f"Validated Sources: {result['validated_sources']}")
-        else:
-            print(f"Error: {result['error']}")
+    final_state = aris_graph.invoke(initial_state)
 
-        print("="*50)
+    # Convert dict to ResearchState if needed
+    if isinstance(final_state, dict):
+        final_state = ResearchState(**final_state)
 
-        # Exit with appropriate code
-        sys.exit(0 if result['status'] == 'completed' else 1)
+    if final_state.error_message:
+        print(f"Job failed: {final_state.error_message}")
+    else:
+        output_dir = Path("./data/aris_ingestion_source/")
+        output_dir.mkdir(parents=True, exist_ok=True)
+        final_output_path = output_dir / f"{final_state.topic.replace(' ', '_')}_{job_id}.md"
+        with open(final_output_path, "w", encoding="utf-8") as f:
+            f.write(final_state.synthesized_article_markdown or "No content generated")
+        print(f"Article saved to: {final_output_path}")
 
-    except KeyboardInterrupt:
-        logger.info("Job interrupted by user")
-        print("\nJob interrupted by user")
-        sys.exit(1)
-    except Exception as e:
-        logger.error(f"Unexpected error: {e}")
-        print(f"Unexpected error: {e}")
-        sys.exit(1)
+    # Clean up scratch directory
+    shutil.rmtree(job_scratch_dir)
+    print(f"--- Job {job_id} Finished. Cleaned up scratch directory. ---")
 
 
 if __name__ == "__main__":

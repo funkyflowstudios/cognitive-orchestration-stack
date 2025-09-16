@@ -47,16 +47,31 @@ class Planner:
         2. "search_queries": A list of 4 high-quality, diverse search engine queries to execute this plan.
         Return ONLY the raw JSON object.
         """
-        
+
         try:
             response = _get_ollama_client().generate(
                 settings.ollama_model,
                 prompt
             )
             response_text = response.get('response', '')
+            
+            # Clean up response text to extract JSON
+            if '```json' in response_text:
+                response_text = response_text.split('```json')[1].split('```')[0]
+            elif '```' in response_text:
+                response_text = response_text.split('```')[1].split('```')[0]
+            
             plan_json = yaml.safe_load(response_text)
-            state.research_plan = plan_json.get("research_plan", {})
-            state.search_queries = plan_json.get("search_queries", [])
+            research_plan = plan_json.get("research_plan", {})
+            # Ensure research_plan is a dict, not a list
+            if isinstance(research_plan, list):
+                research_plan = {"steps": research_plan}
+            state.research_plan = research_plan
+            search_queries = plan_json.get("search_queries", [])
+            # Ensure search_queries are strings, not dicts
+            if search_queries and isinstance(search_queries[0], dict):
+                search_queries = [q.get("query", str(q)) for q in search_queries]
+            state.search_queries = search_queries
         except Exception as e:
             logger.error(f"Error in Planner: {e}")
             # Fallback to basic queries
@@ -67,7 +82,7 @@ class Planner:
                 f"{state.topic} best practices"
             ]
             state.research_plan = {"topic": state.topic, "approach": "basic research"}
-        
+
         return state
 
 
@@ -95,7 +110,7 @@ class ToolExecutor:
                 )
             except Exception as e:
                 print(f"Failed to scrape {url}: {e}. Skipping.")
-        
+
         return state
 
 
@@ -116,12 +131,19 @@ class Validator:
                 --- TEXT FOR ANALYSIS (first 4000 chars) ---
                 {content[:4000]}
                 """
-                
+
                 response = _get_ollama_client().generate(
                     settings.ollama_model,
                     prompt
                 )
                 response_text = response.get('response', '')
+                
+                # Clean up response text to extract JSON
+                if '```json' in response_text:
+                    response_text = response_text.split('```json')[1].split('```')[0]
+                elif '```' in response_text:
+                    response_text = response_text.split('```')[1].split('```')[0]
+                
                 validation_json = yaml.safe_load(response_text)
                 content_ref.validation_score = validation_json.get("validation_score", 0.0)
                 content_ref.validation_notes = validation_json.get("validation_notes", "Validation failed.")
@@ -132,7 +154,7 @@ class Validator:
                 content_ref.validation_score = 0.0
                 content_ref.validation_notes = f"Validation error: {str(e)}"
                 content_ref.is_validated = False
-        
+
         return state
 
 
@@ -143,15 +165,15 @@ class Synthesizer:
     def run(state: ResearchState) -> ResearchState:
         print("--- Node: Synthesizer ---")
         validated_sources = [
-            c for c in state.scraped_content_references 
-            if c.validation_score and c.validation_score >= 0.7
+            c for c in state.scraped_content_references
+            if c.validation_score and c.validation_score >= 0.5
         ]
         if not validated_sources:
             state.error_message = "No high-quality content found to synthesize an article."
             return state
 
         source_texts = [
-            f"--- SOURCE: {c.source_url} ---\n{c.local_path.read_text(encoding='utf-8')}" 
+            f"--- SOURCE: {c.source_url} ---\n{c.local_path.read_text(encoding='utf-8')}"
             for c in validated_sources
         ]
         source_material = "\n\n".join(source_texts)
@@ -161,7 +183,7 @@ class Synthesizer:
         --- VALIDATED SOURCE TEXT (first 15000 chars) ---
         {source_material[:15000]}
         """
-        
+
         try:
             response = _get_ollama_client().generate(
                 settings.ollama_model,
@@ -169,17 +191,17 @@ class Synthesizer:
             )
             response_text = response.get('response', '')
             state.synthesized_article_markdown = response_text
-            
+
             # Save synthesized content
             output_file = state.job_scratch_dir / "synthesized_article.md"
             with open(output_file, 'w', encoding='utf-8') as f:
                 f.write(response_text)
             state.final_output_path = output_file
-            
+
         except Exception as e:
             logger.error(f"Error in Synthesizer: {e}")
             state.error_message = f"Synthesis failed: {str(e)}"
-        
+
         return state
 
 
