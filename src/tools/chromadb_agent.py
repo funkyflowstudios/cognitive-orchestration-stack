@@ -32,7 +32,9 @@ class ChromaDBAgent:
             logger.info("ChromaDB client initialized with connection pooling")
 
         self._client = ChromaDBAgent._client
-        self._collection = self._client.get_or_create_collection(collection_name)
+        self._collection = self._client.get_or_create_collection(
+            collection_name
+        )
         self._embedding_function = ChromaDBAgent._embedding_function
         logger.info("ChromaDB collection '%s' ready", collection_name)
 
@@ -67,7 +69,18 @@ class ChromaDBAgent:
         """Async version of similarity search for better performance."""
         # Run the cached search in a thread pool
         loop = asyncio.get_event_loop()
-        return await loop.run_in_executor(None, self._cached_search, query, n_results)
+        return await loop.run_in_executor(
+            None, self._cached_search, query, n_results
+        )
+
+    def get_collections(self) -> List[str]:
+        """Get list of available collections."""
+        try:
+            collections = self._client.list_collections()
+            return [collection.name for collection in collections]
+        except Exception as e:
+            logger.error("Failed to get collections: %s", e)
+            return []
 
     def clear_cache(self) -> None:
         """Clear the LRU cache."""

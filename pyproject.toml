@@ -73,6 +73,7 @@ opentelemetry-proto = "^1.37.0"
 opentelemetry-semantic-conventions = "^0.58b0"
 hvac = "^2.0.0"
 structlog = "^24.1.0"
+textual = "^0.66.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.4.2"
@@ -99,6 +100,7 @@ test = "pytest"
 lint = "flake8 src tests"
 format = "black src tests"
 type-check = "mypy src"
+cos = "src.tui.app:main"
 
 [tool.black]
 line-length = 88

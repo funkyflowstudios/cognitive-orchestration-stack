@@ -43,7 +43,11 @@ class WebScraperAgent:
         elements = partition_html(text=response.text)
         content = "\n\n".join([str(el) for el in elements])
 
-        safe_filename = "".join(c if c.isalnum() else "_" for c in url)[:100] + ".md"
+        # Create a safer filename and ensure output_dir exists
+        output_dir.mkdir(parents=True, exist_ok=True)
+        safe_filename = (
+            "".join(c if c.isalnum() or c in "._-" else "_" for c in url)[:100] + ".md"
+        )
         output_path = output_dir / safe_filename
         output_path.write_text(content, encoding="utf-8")
         return output_path
@@ -63,7 +67,8 @@ class ScraperAgent:
         self.session.headers.update(
             {
                 "User-Agent": (
-                    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) " "AppleWebKit/537.36"
+                    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                    "AppleWebKit/537.36"
                 )
             }
         )
@@ -88,7 +93,9 @@ class ScraperAgent:
 
             # Extract basic metadata
             title = soup.find("title")
-            title_text = title.get_text().strip() if title else "No title found"
+            title_text = (
+                title.get_text().strip() if title else "No title found"
+            )
 
             # Use unstructured to extract clean text
             elements = partition_html(text=response.text)
@@ -103,7 +110,8 @@ class ScraperAgent:
             }
 
             logger.info(
-                f"Successfully scraped {url}: " f"{len(content_text)} characters"
+                f"Successfully scraped {url}: "
+                f"{len(content_text)} characters"
             )
             return result
 
@@ -171,7 +179,9 @@ class ScraperAgent:
 
         content["validation_score"] = validation_score
         content["validation_notes"] = (
-            "; ".join(validation_notes) if validation_notes else "Content appears valid"
+            "; ".join(validation_notes)
+            if validation_notes
+            else "Content appears valid"
         )
         content["is_validated"] = validation_score >= 0.6
 

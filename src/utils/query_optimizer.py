@@ -41,7 +41,10 @@ class QueryOptimizer:
             if "RETURN" in optimized.upper():
                 # Add LIMIT before RETURN
                 optimized = re.sub(
-                    r"(\s+RETURN\s+)", r"\1LIMIT 100 ", optimized, flags=re.IGNORECASE
+                    r"(\s+RETURN\s+)",
+                    r"\1LIMIT 100 ",
+                    optimized,
+                    flags=re.IGNORECASE,
                 )
             else:
                 # Add LIMIT at the end
@@ -81,7 +84,9 @@ class QueryOptimizer:
 
         # Add suggestions based on query analysis
         if "LIMIT" not in query.upper():
-            suggestions.append("Consider adding LIMIT to prevent large result sets")
+            suggestions.append(
+                "Consider adding LIMIT to prevent large result sets"
+            )
 
         if query.count("MATCH") > 3:
             suggestions.append(
@@ -91,7 +96,8 @@ class QueryOptimizer:
 
         if "ORDER BY" in query.upper() and "LIMIT" not in query.upper():
             suggestions.append(
-                "ORDER BY without LIMIT may be expensive - consider adding " "LIMIT"
+                "ORDER BY without LIMIT may be expensive - consider adding "
+                "LIMIT"
             )
 
         analysis = {

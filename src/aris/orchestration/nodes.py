@@ -58,12 +58,16 @@ class Planner:
         )
 
         try:
-            response = _get_ollama_client().generate(settings.ollama_model, prompt)
+            response = _get_ollama_client().generate(
+                settings.ollama_model, prompt
+            )
             response_text = response.get("response", "")
 
             # Clean up response text to extract JSON
             if "```json" in response_text:
-                response_text = response_text.split("```json")[1].split("```")[0]
+                response_text = response_text.split("```json")[1].split("```")[
+                    0
+                ]
             elif "```" in response_text:
                 response_text = response_text.split("```")[1].split("```")[0]
 
@@ -76,7 +80,9 @@ class Planner:
             search_queries = plan_json.get("search_queries", [])
             # Ensure search_queries are strings, not dicts
             if search_queries and isinstance(search_queries[0], dict):
-                search_queries = [q.get("query", str(q)) for q in search_queries]
+                search_queries = [
+                    q.get("query", str(q)) for q in search_queries
+                ]
             state.search_queries = search_queries
         except Exception as e:
             logger.error(f"Error in Planner: {e}")
@@ -87,7 +93,10 @@ class Planner:
                 f"{state.topic} analysis",
                 f"{state.topic} best practices",
             ]
-            state.research_plan = {"topic": state.topic, "approach": "basic research"}
+            state.research_plan = {
+                "topic": state.topic,
+                "approach": "basic research",
+            }
 
         return state
 
@@ -110,7 +119,9 @@ class ToolExecutor:
 
         for url in all_urls:
             try:
-                file_path = WebScraperAgent.scrape_and_parse(url, state.job_scratch_dir)
+                file_path = WebScraperAgent.scrape_and_parse(
+                    url, state.job_scratch_dir
+                )
                 state.scraped_content_references.append(
                     ScrapedContent(source_url=url, local_path=file_path)
                 )
@@ -138,14 +149,20 @@ class Validator:
                 {content[:4000]}
                 """
 
-                response = _get_ollama_client().generate(settings.ollama_model, prompt)
+                response = _get_ollama_client().generate(
+                    settings.ollama_model, prompt
+                )
                 response_text = response.get("response", "")
 
                 # Clean up response text to extract JSON
                 if "```json" in response_text:
-                    response_text = response_text.split("```json")[1].split("```")[0]
+                    response_text = response_text.split("```json")[1].split(
+                        "```"
+                    )[0]
                 elif "```" in response_text:
-                    response_text = response_text.split("```")[1].split("```")[0]
+                    response_text = response_text.split("```")[1].split("```")[
+                        0
+                    ]
 
                 validation_json = yaml.safe_load(response_text)
                 content_ref.validation_score = validation_json.get(
@@ -160,7 +177,9 @@ class Validator:
                     f"{content_ref.validation_score}"
                 )
             except Exception as e:
-                logger.error(f"Validation failed for {content_ref.source_url}: {e}")
+                logger.error(
+                    f"Validation failed for {content_ref.source_url}: {e}"
+                )
                 content_ref.validation_score = 0.0
                 content_ref.validation_notes = f"Validation error: {str(e)}"
                 content_ref.is_validated = False
@@ -199,7 +218,9 @@ class Synthesizer:
         """
 
         try:
-            response = _get_ollama_client().generate(settings.ollama_model, prompt)
+            response = _get_ollama_client().generate(
+                settings.ollama_model, prompt
+            )
             response_text = response.get("response", "")
             state.synthesized_article_markdown = response_text
 

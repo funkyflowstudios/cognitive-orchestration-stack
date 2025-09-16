@@ -49,7 +49,9 @@ class ChimeraCLI:  # noqa: D101
                 if question.lower() in {"exit", "quit"}:
                     # Smooth fade-out without terminal flooding
                     run_animation(
-                        disintegration_frames(), frame_duration=0.03, repeat=False
+                        disintegration_frames(),
+                        frame_duration=0.03,
+                        repeat=False,
                     )
                     print("Goodbye. ✨")
                     break

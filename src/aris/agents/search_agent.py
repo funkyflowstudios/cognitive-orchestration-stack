@@ -31,7 +31,9 @@ class WebSearchAgent:
         print(f"-> Searching: '{query}'")
         with DDGS() as ddgs:
             results = list(
-                ddgs.text(query, region="wt-wt", safesearch="off", timelimit="y")
+                ddgs.text(
+                    query, region="wt-wt", safesearch="off", timelimit="y"
+                )
             )
             return results[:max_results]
 
@@ -59,14 +61,48 @@ class SearchAgent:
         """
         try:
             logger.info(f"Searching for: {query}")
-            results = list(self.ddgs.text(query, max_results=self.max_results))
-            logger.info(f"Found {len(results)} results for query: {query}")
-            return results
+            # Add language filter to get English results
+            results = list(self.ddgs.text(
+                query,
+                max_results=self.max_results,
+                region="us-en",  # US English region
+                safesearch="moderate"
+            ))
+
+            # Filter out non-English results
+            english_results = []
+            for result in results:
+                title = result.get('title', '').lower()
+                body = result.get('body', '').lower()
+                href = result.get('href', '')
+
+                # Skip Chinese/Asian language results
+                chinese_chars = ['中文', '百度', '经验', '网页', '贴吧', '知道', '音乐', '图片', '视频', '地图', '百科', '文库', '知乎', '问题', '回答']
+                if any(char in title + body for char in chinese_chars):
+                    continue
+
+                # Skip non-English domains
+                non_english_domains = ['baidu.com', 'zhihu.com', 'douban.com', 'weibo.com', 'qq.com', 'sina.com', 'sohu.com', '163.com']
+                if any(domain in href for domain in non_english_domains):
+                    continue
+
+                # Skip results with too many non-ASCII characters (likely non-English)
+                text_content = title + body
+                non_ascii_ratio = sum(1 for c in text_content if ord(c) > 127) / len(text_content) if text_content else 0
+                if non_ascii_ratio > 0.3:  # More than 30% non-ASCII characters
+                    continue
+
+                english_results.append(result)
+
+            logger.info(f"Found {len(english_results)} English results for query: {query}")
+            return english_results
         except Exception as e:
             logger.error(f"Search failed for query '{query}': {e}")
             return []
 
-    def search_multiple(self, queries: List[str]) -> Dict[str, List[Dict[str, Any]]]:
+    def search_multiple(
+        self, queries: List[str]
+    ) -> Dict[str, List[Dict[str, Any]]]:
         """Perform multiple searches and return results grouped by query.
 
         Args:

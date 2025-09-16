@@ -77,7 +77,10 @@ def create_openapi_schema(app: FastAPI) -> dict:
             "name": "health",
             "description": "Health monitoring endpoints for production deployment",
         },
-        {"name": "metrics", "description": "Performance metrics and monitoring"},
+        {
+            "name": "metrics",
+            "description": "Performance metrics and monitoring",
+        },
         {
             "name": "documentation",
             "description": "API documentation and schema information",
