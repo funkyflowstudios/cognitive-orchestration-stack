@@ -2,10 +2,8 @@
 
 import logging
 from logging.handlers import TimedRotatingFileHandler
-try:
-    from src.config import get_settings
-except ImportError:
-    from config import get_settings
+import sys
+from pathlib import Path
 
 try:
     from rich.logging import RichHandler
@@ -13,7 +11,21 @@ try:
 except ImportError:
     RICH_AVAILABLE = False
 
-settings = get_settings()
+
+def _get_settings():
+    """Get settings with proper import handling."""
+    # Add src to path for imports
+    sys.path.append(str(Path(__file__).parent.parent))
+
+    try:
+        from src.config import get_settings
+        return get_settings()
+    except ImportError:
+        from config import get_settings
+        return get_settings()
+
+
+settings = _get_settings()
 
 # Define the format for log messages
 FORMATTER = logging.Formatter(
