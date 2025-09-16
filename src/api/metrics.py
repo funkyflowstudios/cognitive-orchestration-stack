@@ -1,9 +1,9 @@
 # src/api/metrics.py
 """Comprehensive metrics endpoints for monitoring performance data."""
+# flake8: noqa: E501
 
 from __future__ import annotations
 
-import time
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import HTMLResponse
 from src.utils.metrics import get_metrics, reset_metrics
@@ -20,7 +20,9 @@ async def get_metrics_endpoint():
         return get_metrics()
     except Exception as e:
         logger.error("Error getting metrics: %s", e)
-        raise HTTPException(status_code=500, detail=f"Error getting metrics: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Error getting metrics: {str(e)}"
+        )
 
 
 @router.get("/dashboard")

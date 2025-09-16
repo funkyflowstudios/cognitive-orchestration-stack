@@ -15,7 +15,10 @@ logger = get_logger(__name__)
 
 app = FastAPI(
     title="Cognitive Orchestration Stack API",
-    description="Comprehensive API for cognitive orchestration with monitoring, metrics, and documentation",
+    description=(
+        "Comprehensive API for cognitive orchestration with monitoring, "
+        "metrics, and documentation"
+    ),
     version="1.0.0",
     docs_url="/docs",
     redoc_url="/redoc",
@@ -37,6 +40,8 @@ app.include_router(metrics_router)
 app.include_router(docs_router)
 
 # Add middleware for request tracking
+
+
 @app.middleware("http")
 async def track_requests(request, call_next):
     """Track requests for metrics collection."""
@@ -50,6 +55,7 @@ async def track_requests(request, call_next):
             error_count(f"http_{response.status_code}")
         return response
     except Exception as e:
+        logger.error("Request processing error: %s", e)
         error_count("internal_error")
         raise
 

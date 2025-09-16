@@ -1,13 +1,12 @@
 # src/api/docs.py
 """API documentation and OpenAPI schema generation."""
+# flake8: noqa: E501
 
 from __future__ import annotations
 
 from fastapi import APIRouter, FastAPI
 from fastapi.openapi.utils import get_openapi
 from fastapi.responses import HTMLResponse
-from src.api.health import router as health_router
-from src.api.metrics import router as metrics_router
 from src.utils.logger import get_logger
 
 logger = get_logger(__name__)
