@@ -5,11 +5,17 @@ Handles web search operations using DuckDuckGo search API.
 
 from typing import List, Dict, Any
 import logging
-from duckduckgo_search import DDGS
 import sys
 from pathlib import Path
+from duckduckgo_search import DDGS
+
+# Add src to path for imports
 sys.path.append(str(Path(__file__).parent.parent.parent))
-from utils.retry import retry
+
+try:
+    from utils.retry import retry
+except ImportError:
+    from src.utils.retry import retry
 
 logger = logging.getLogger(__name__)
 

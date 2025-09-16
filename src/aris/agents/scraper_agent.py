@@ -5,13 +5,19 @@ Handles content extraction and validation from web pages.
 
 from typing import List, Dict, Any, Optional
 import logging
+import sys
+from pathlib import Path
 import requests
 from bs4 import BeautifulSoup
 from unstructured.partition.html import partition_html
-from pathlib import Path
-import sys
+
+# Add src to path for imports
 sys.path.append(str(Path(__file__).parent.parent.parent))
-from utils.retry import retry
+
+try:
+    from utils.retry import retry
+except ImportError:
+    from src.utils.retry import retry
 
 logger = logging.getLogger(__name__)
 
