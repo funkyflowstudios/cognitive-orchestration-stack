@@ -113,7 +113,7 @@ class ArisScreen(Screen):
                 self._log_message,
                 "[bold yellow]📋 Initializing research environment...[/bold yellow]",
             )
-            
+
             # Show demonstration mode notice
             self.call_later(
                 self._log_message,
