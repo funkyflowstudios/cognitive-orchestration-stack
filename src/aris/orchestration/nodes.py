@@ -52,7 +52,9 @@ class Planner:
         Generate a JSON object with two keys:
         1. "research_plan": A concise, step-by-step plan.
         2. "search_queries": A list of 4 high-quality, diverse search engine
-           queries to execute this plan.
+           queries to execute this plan. Use specific, targeted keywords and
+           include terms like "best", "top", "popular", "professional", "review"
+           to get better search results. Focus on English-language sources.
         Return ONLY the raw JSON object.
         """
         )
@@ -86,16 +88,32 @@ class Planner:
             state.search_queries = search_queries
         except Exception as e:
             logger.error(f"Error in Planner: {e}")
-            # Fallback to basic queries
-            state.search_queries = [
-                f"{state.topic} overview",
-                f"{state.topic} research",
-                f"{state.topic} analysis",
-                f"{state.topic} best practices",
-            ]
+            # Fallback to better queries based on topic
+            topic_lower = state.topic.lower()
+            if "vst" in topic_lower or "plugin" in topic_lower:
+                state.search_queries = [
+                    "best VST plugins 2024 professional music production",
+                    "top VST plugins used by music producers",
+                    "most popular VST plugins music production",
+                    "professional VST plugins review comparison"
+                ]
+            elif "music" in topic_lower:
+                state.search_queries = [
+                    f"best {state.topic} 2024",
+                    f"top {state.topic} professional",
+                    f"most popular {state.topic}",
+                    f"{state.topic} review comparison"
+                ]
+            else:
+                state.search_queries = [
+                    f"best {state.topic} 2024",
+                    f"top {state.topic} professional",
+                    f"most popular {state.topic}",
+                    f"{state.topic} review guide"
+                ]
             state.research_plan = {
                 "topic": state.topic,
-                "approach": "basic research",
+                "approach": "fallback research with targeted queries",
             }
 
         return state

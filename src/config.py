@@ -64,6 +64,10 @@ class Settings(BaseSettings):
     ollama_model: str = "llama3"
     ollama_embedding_model: str  # This was the missing field
 
+    # --- Google Search API Configuration (Optional) ---
+    google_api_key: Optional[str] = None
+    google_cse_id: Optional[str] = None
+
     # --- Validators ---
 
     @classmethod
