@@ -13,9 +13,10 @@ The pipeline:
 from __future__ import annotations
 
 import argparse
+import subprocess
+import sys
 from pathlib import Path
 from typing import List, Dict, Any
-import re
 
 import spacy
 import yaml
@@ -29,18 +30,13 @@ from llama_index.embeddings.ollama import (
     OllamaEmbedding,
 )
 
-import sys
-from pathlib import Path
-
 # Add src to Python path for imports
 sys.path.append(str(Path(__file__).parent.parent))
 
-from src.utils.logger import get_logger
-from src.tools.chromadb_agent import ChromaDBAgent
-from src.tools.neo4j_agent import Neo4jAgent
-from src.config import get_settings
-
-import subprocess
+from src.config import get_settings  # noqa: E402
+from src.tools.chromadb_agent import ChromaDBAgent  # noqa: E402
+from src.tools.neo4j_agent import Neo4jAgent  # noqa: E402
+from src.utils.logger import get_logger  # noqa: E402
 
 logger = get_logger(__name__)
 settings = get_settings()
@@ -132,18 +128,25 @@ def parse_documents(source_dir: Path) -> List[Document]:  # noqa: D401
                         metadata=metadata,
                     )
                 )
-                logger.info("Parsed ARIS document with metadata: %s", list(metadata.keys()))
+                logger.info(
+                    "Parsed ARIS document with metadata: %s",
+                    list(metadata.keys())
+                )
                 continue
 
             except Exception as exc:
-                logger.error("Failed parsing ARIS document %s: %s", file_path.name, exc)
+                logger.error(
+                    "Failed parsing ARIS document %s: %s", file_path.name, exc
+                )
                 continue
 
         # Handle other file types with unstructured
         try:
             elements = partition(str(file_path))
-        except UnsupportedFileFormatError:  # skip unknown file types
-            logger.warning("Skipping unsupported file type: %s", file_path.name)
+        except UnsupportedFileFormatError:  # noqa: E501
+            logger.warning(
+                "Skipping unsupported file type: %s", file_path.name
+            )
             continue
         except ImportError as exc:
             logger.warning(
@@ -155,18 +158,24 @@ def parse_documents(source_dir: Path) -> List[Document]:  # noqa: D401
         except Exception as exc:  # noqa: BLE001
             logger.error("Failed parsing %s: %s", file_path.name, exc)
             continue
-        texts = [el.text for el in elements if hasattr(el, "text")]
+        texts = [
+            el.text for el in elements if hasattr(el, "text")
+        ]
         docs.append(
             Document(
                 text="\n".join(texts),
-                metadata={"filename": file_path.name, "source": "unstructured"},
+                metadata={
+                    "filename": file_path.name, "source": "unstructured"
+                },
             )
         )
     logger.info("Parsed %d documents", len(docs))
     return docs
 
 
-def extract_entities(text: str, nlp: spacy.language.Language) -> List[tuple[str, str]]:  # noqa: D401
+def extract_entities(
+    text: str, nlp: spacy.language.Language
+) -> List[tuple[str, str]]:  # noqa: D401
     """Return list of (entity_text, label) pairs."""
 
     doc = nlp(text)
@@ -208,7 +217,9 @@ def ingest(source_dir: Path) -> None:  # noqa: D401
 
 def main() -> None:  # noqa: D401
     parser = argparse.ArgumentParser(description="Document ingestion pipeline")
-    parser.add_argument("--source_dir", default="data", help="Directory containing documents")
+    parser.add_argument(
+        "--source_dir", default="data", help="Directory containing documents"
+    )
     args = parser.parse_args()
 
     src = Path(args.source_dir)
