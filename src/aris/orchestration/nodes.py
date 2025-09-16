@@ -65,9 +65,13 @@ class Planner:
 
             # Clean up response text to extract JSON
             if '```json' in response_text:
-                response_text = response_text.split('```json')[1].split('```')[0]
+                response_text = response_text.split('```json')[1].split(
+                    '```'
+                )[0]
             elif '```' in response_text:
-                response_text = response_text.split('```')[1].split('```')[0]
+                response_text = response_text.split('```')[1].split(
+                    '```'
+                )[0]
 
             plan_json = yaml.safe_load(response_text)
             research_plan = plan_json.get("research_plan", {})
@@ -78,7 +82,9 @@ class Planner:
             search_queries = plan_json.get("search_queries", [])
             # Ensure search_queries are strings, not dicts
             if search_queries and isinstance(search_queries[0], dict):
-                search_queries = [q.get("query", str(q)) for q in search_queries]
+                search_queries = [
+                    q.get("query", str(q)) for q in search_queries
+                ]
             state.search_queries = search_queries
         except Exception as e:
             logger.error(f"Error in Planner: {e}")
@@ -89,7 +95,9 @@ class Planner:
                 f"{state.topic} analysis",
                 f"{state.topic} best practices"
             ]
-            state.research_plan = {"topic": state.topic, "approach": "basic research"}
+            state.research_plan = {
+                "topic": state.topic, "approach": "basic research"
+            }
 
         return state
 
@@ -108,11 +116,15 @@ class ToolExecutor:
                     if 'href' in result:
                         all_urls.add(result['href'])
             except Exception as e:
-                logger.error(f"Search failed for query '{query}': {e}")
+                logger.error(
+                    f"Search failed for query '{query}': {e}"
+                )
 
         for url in all_urls:
             try:
-                file_path = WebScraperAgent.scrape_and_parse(url, state.job_scratch_dir)
+                file_path = WebScraperAgent.scrape_and_parse(
+                    url, state.job_scratch_dir
+                )
                 state.scraped_content_references.append(
                     ScrapedContent(source_url=url, local_path=file_path)
                 )
@@ -131,14 +143,16 @@ class Validator:
         for content_ref in state.scraped_content_references:
             try:
                 content = content_ref.local_path.read_text(encoding="utf-8")
-                prompt = f"""You are a critical fact-checker. Analyze the following text scraped from {content_ref.source_url} for a report on "{state.topic}".
-                Assess the text for relevance, objectivity, and quality. Provide a JSON object with two keys:
-                1. "validation_score": A float between 0.0 (poor) and 1.0 (excellent).
-                2. "validation_notes": A brief, one-sentence justification for the score.
+                prompt = (
+                    f"""You are a critical fact-checker. Analyze the following text scraped from {content_ref.source_url} for a report on "{state.topic}".  # noqa: E501
+                Assess the text for relevance, objectivity, and quality. Provide a JSON object with two keys:  # noqa: E501
+                1. "validation_score": A float between 0.0 (poor) and 1.0 (excellent).  # noqa: E501
+                2. "validation_notes": A brief, one-sentence justification for the score.  # noqa: E501
                 Return ONLY the raw JSON object.
                 --- TEXT FOR ANALYSIS (first 4000 chars) ---
                 {content[:4000]}
                 """
+                )
 
                 response = _get_ollama_client().generate(
                     settings.ollama_model,
@@ -148,17 +162,30 @@ class Validator:
 
                 # Clean up response text to extract JSON
                 if '```json' in response_text:
-                    response_text = response_text.split('```json')[1].split('```')[0]
+                    response_text = response_text.split('```json')[1].split(
+                        '```'
+                    )[0]
                 elif '```' in response_text:
-                    response_text = response_text.split('```')[1].split('```')[0]
+                    response_text = response_text.split('```')[1].split(
+                        '```'
+                    )[0]
 
                 validation_json = yaml.safe_load(response_text)
-                content_ref.validation_score = validation_json.get("validation_score", 0.0)
-                content_ref.validation_notes = validation_json.get("validation_notes", "Validation failed.")
+                content_ref.validation_score = validation_json.get(
+                    "validation_score", 0.0
+                )
+                content_ref.validation_notes = validation_json.get(
+                    "validation_notes", "Validation failed."
+                )
                 content_ref.is_validated = True
-                print(f"-> Validated {content_ref.source_url} with score {content_ref.validation_score}")
+                print(
+                    f"-> Validated {content_ref.source_url} with score "
+                    f"{content_ref.validation_score}"
+                )
             except Exception as e:
-                logger.error(f"Validation failed for {content_ref.source_url}: {e}")
+                logger.error(
+                    f"Validation failed for {content_ref.source_url}: {e}"
+                )
                 content_ref.validation_score = 0.0
                 content_ref.validation_notes = f"Validation error: {str(e)}"
                 content_ref.is_validated = False
@@ -177,20 +204,25 @@ class Synthesizer:
             if c.validation_score and c.validation_score >= 0.5
         ]
         if not validated_sources:
-            state.error_message = "No high-quality content found to synthesize an article."
+            state.error_message = (
+                "No high-quality content found to synthesize an article."
+            )
             return state
 
         source_texts = [
-            f"--- SOURCE: {c.source_url} ---\n{c.local_path.read_text(encoding='utf-8')}"
+            f"--- SOURCE: {c.source_url} ---\n"
+            f"{c.local_path.read_text(encoding='utf-8')}"
             for c in validated_sources
         ]
         source_material = "\n\n".join(source_texts)
 
-        prompt = f"""You are an expert writer. Synthesize the provided source material into a comprehensive, well-structured Markdown article on the topic: "{state.topic}".
-        Base your article ONLY on the provided information. Structure it with a title, introduction, body, and conclusion.
+        prompt = (
+            f"""You are an expert writer. Synthesize the provided source material into a comprehensive, well-structured Markdown article on the topic: "{state.topic}".  # noqa: E501
+        Base your article ONLY on the provided information. Structure it with a title, introduction, body, and conclusion.  # noqa: E501
         --- VALIDATED SOURCE TEXT (first 15000 chars) ---
         {source_material[:15000]}
         """
+        )
 
         try:
             response = _get_ollama_client().generate(
