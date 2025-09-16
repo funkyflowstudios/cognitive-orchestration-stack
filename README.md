@@ -327,7 +327,7 @@ The system supports multiple environments with automatic configuration loading:
 
 ## License
 
-This project is licensed under an All Rights Reserved License. 
+This project is licensed under an All Rights Reserved License.
 
 **Commercial Use Restrictions**: This software is provided for personal, educational, and non-commercial use only. Any commercial use, including selling, licensing, or distributing the software for commercial purposes, requires explicit written permission from the copyright owner.
 
