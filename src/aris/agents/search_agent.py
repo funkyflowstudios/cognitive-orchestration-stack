@@ -6,8 +6,27 @@ Handles web search operations using DuckDuckGo search API.
 from typing import List, Dict, Any
 import logging
 from duckduckgo_search import DDGS
+import sys
+from pathlib import Path
+sys.path.append(str(Path(__file__).parent.parent.parent))
+from utils.retry import retry
 
 logger = logging.getLogger(__name__)
+
+
+class WebSearchAgent:
+    """Agent responsible for executing web searches."""
+
+    @staticmethod
+    @retry
+    def run_search(query: str, max_results: int = 5) -> List[Dict[str, str]]:
+        """Executes a web search and returns the results."""
+        print(f"-> Searching: '{query}'")
+        with DDGS() as ddgs:
+            results = list(ddgs.text(
+                query, region='wt-wt', safesearch='off', timelimit='y'
+            ))
+            return results[:max_results]
 
 
 class SearchAgent:

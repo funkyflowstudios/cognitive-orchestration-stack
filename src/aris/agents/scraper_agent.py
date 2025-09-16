@@ -8,8 +8,40 @@ import logging
 import requests
 from bs4 import BeautifulSoup
 from unstructured.partition.html import partition_html
+from pathlib import Path
+import sys
+sys.path.append(str(Path(__file__).parent.parent.parent))
+from utils.retry import retry
 
 logger = logging.getLogger(__name__)
+
+
+class WebScraperAgent:
+    """Agent responsible for scraping and parsing web content."""
+
+    @staticmethod
+    @retry
+    def scrape_and_parse(url: str, output_dir: Path) -> Path:
+        """Scrapes a URL, parses its content to Markdown, and saves it."""
+        print(f"-> Scraping: {url}")
+        headers = {
+            'User-Agent': (
+                'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
+                'AppleWebKit/537.36 (KHTML, like Gecko) '
+                'Chrome/91.0.4472.124 Safari/537.36'
+            )
+        }
+        response = requests.get(url, headers=headers, timeout=20)
+        response.raise_for_status()
+        elements = partition_html(text=response.text)
+        content = "\n\n".join([str(el) for el in elements])
+
+        safe_filename = (
+            "".join(c if c.isalnum() else "_" for c in url)[:100] + ".md"
+        )
+        output_path = output_dir / safe_filename
+        output_path.write_text(content, encoding="utf-8")
+        return output_path
 
 
 class ScraperAgent:
