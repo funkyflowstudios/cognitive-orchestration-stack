@@ -31,7 +31,7 @@ class WebScraperAgent:
     def scrape_and_parse(url: str, output_dir: Path) -> Path:
         """Scrapes a URL, parses its content to Markdown, and saves it."""
         print(f"-> Scraping: {url}")
-        
+
         # Handle mock URLs with generated content
         if "example.com" in url or "soundonsound.com" in url or "musictech.net" in url or "gearspace.com" in url:
             content = WebScraperAgent._generate_mock_content(url)
@@ -61,7 +61,7 @@ class WebScraperAgent:
         output_path = output_dir / safe_filename
         output_path.write_text(content, encoding="utf-8")
         return output_path
-    
+
     @staticmethod
     def _generate_mock_content(url: str) -> str:
         """Generate realistic mock content for demonstration purposes."""

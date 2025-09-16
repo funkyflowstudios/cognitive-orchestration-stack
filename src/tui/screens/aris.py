@@ -113,6 +113,12 @@ class ArisScreen(Screen):
                 self._log_message,
                 "[bold yellow]📋 Initializing research environment...[/bold yellow]",
             )
+            
+            # Show demonstration mode notice
+            self.call_later(
+                self._log_message,
+                "[dim]ℹ️  Note: Using demonstration mode with curated content[/dim]",
+            )
 
             # Run the actual ARIS research job
             results = run_research_job(topic)
