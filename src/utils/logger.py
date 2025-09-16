@@ -2,7 +2,10 @@
 
 import logging
 from logging.handlers import TimedRotatingFileHandler
-from src.config import get_settings
+try:
+    from src.config import get_settings
+except ImportError:
+    from config import get_settings
 
 try:
     from rich.logging import RichHandler
