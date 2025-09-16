@@ -325,7 +325,7 @@ def disintegration_frames() -> list[str]:  # noqa: D401
     frames.append("\n" * rows)
     return frames
 
-# Backward-compat wrappers -----------------------------------------------------
+# Backward-compat wrappers -----------------------------------------------
 
 
 def play_overture() -> None:  # pragma: no cover
