@@ -19,13 +19,12 @@ from typing import List
 import spacy
 from unstructured.partition.auto import partition
 from unstructured.partition.common import UnsupportedFileFormatError
-# type: ignore[import-not-found]
 from llama_index.core import (
-    Document,  # type: ignore[import-not-found]
-    VectorStoreIndex,  # type: ignore[import-not-found]
+    Document,
+    VectorStoreIndex,
 )
 from llama_index.embeddings.ollama import (
-    OllamaEmbedding,  # type: ignore[import-not-found]
+    OllamaEmbedding,
 )
 
 from src.utils.logger import get_logger
@@ -69,7 +68,7 @@ def parse_documents(source_dir: Path) -> List[Document]:  # noqa: D401
             continue
         logger.info("Parsing %s", file_path.name)
         try:
-            elements = partition(file_path)
+            elements = partition(str(file_path))
         except UnsupportedFileFormatError:  # skip unknown file types
             logger.warning("Skipping unsupported file type: %s", file_path.name)
             continue

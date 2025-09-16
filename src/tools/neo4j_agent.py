@@ -1,38 +1,98 @@
+# In agent_stack/src/tools/neo4j_agent.py
+
 from __future__ import annotations
-
-"""Neo4j client wrapper used by the orchestration layer."""
-
-from typing import Any, List
-
-from neo4j import GraphDatabase, BoltDriver
-
-from ..utils.logger import get_logger
+import asyncio
+from neo4j import GraphDatabase
 from src.config import get_settings
+from src.utils.logger import get_logger
+from src.utils.retry import retry
 
 logger = get_logger(__name__)
 settings = get_settings()
 
 
-class Neo4jAgent:  # noqa: D401
-    """Thin convenience wrapper around the Neo4j Bolt driver."""
+class Neo4jAgent:
+    def __init__(self):
+        self._driver = None
+        try:
+            # Use connection pooling (pool size 10 by default)
+            self._driver = GraphDatabase.driver(
+                settings.neo4j_uri,
+                auth=(
+                    settings.neo4j_user,
+                    settings.neo4j_password,
+                ),
+                max_connection_pool_size=10,
+            )
+            self._driver.verify_connectivity()
+            logger.info("Connected to Neo4j at %s", settings.neo4j_uri)
+        except Exception as e:
+            logger.error("Failed to connect to Neo4j: %s", e)
+            raise
 
-    def __init__(self) -> None:
-        self._driver: BoltDriver = GraphDatabase.driver(
-            settings.neo4j_uri, auth=(settings.neo4j_user, settings.neo4j_password)
-        )
-        logger.info("Connected to Neo4j at %s", settings.neo4j_uri)
+    def close(self):
+        if self._driver is not None:
+            self._driver.close()
+            logger.info("Neo4j driver closed")
 
-    def query(self, cypher: str, parameters: dict | None = None) -> List[Any]:
-        """Execute a Cypher query and return the resulting records as list."""
+    # In agent_stack/src/tools/neo4j_agent.py
 
+    @retry
+    def query(self, cypher: str, parameters: dict | None = None) -> list:
+        """
+        Execute a Cypher query with parameters.
+
+        Args:
+            cypher: The Cypher query template with parameter placeholders
+            parameters: Dictionary of parameters to substitute in the query
+
+        Returns:
+            List of records from the query result
+
+        Note:
+            This method uses parameterized queries to prevent injection
+            attacks.
+            All user input should be passed via the parameters dict, not
+            embedded directly in the cypher string.
+        """
         with self._driver.session() as session:
             result = session.run(cypher, parameters or {})
-            records = list(result)
-            logger.debug("Returned %d records", len(records))
-            return [r.data() for r in records]
+            return [record.data() for record in result]
 
-    def close(self) -> None:  # noqa: D401
-        """Close underlying driver."""
+    async def query_async(
+        self, cypher: str, parameters: dict | None = None
+    ) -> list:
+        """
+        Async version of query method for better performance.
 
-        self._driver.close()
-        logger.info("Neo4j driver closed")
+        Args:
+            cypher: The Cypher query template with parameter placeholders
+            parameters: Dictionary of parameters to substitute in the query
+
+        Returns:
+            List of records from the query result
+
+        Note:
+            This method uses parameterized queries to prevent injection
+            attacks.
+            All user input should be passed via the parameters dict, not
+            embedded directly in the cypher string.
+        """
+        # Run the synchronous query in a thread pool
+        loop = asyncio.get_event_loop()
+        return await loop.run_in_executor(
+            None,
+            self._execute_query_sync,
+            cypher,
+            parameters or {}
+        )
+
+    def _execute_query_sync(self, cypher: str, parameters: dict) -> list:
+        """Synchronous query execution for use in thread pool."""
+        with self._driver.session() as session:
+            result = session.run(cypher, parameters)
+            return [record.data() for record in result]
+
+    # ------------------------------------------------------------------
+    # Private helpers
+    # ------------------------------------------------------------------

@@ -1,0 +1,6 @@
+Return code: 2
+STDOUT:
+
+STDERR:
+C:\Users\asant\AppData\Local\Programs\Python\Python311\python.exe: can't open file 'D:\\Projektit\\agent_stack\\test_minimal.py': [Errno 2] No such file or directory
+

@@ -1,18 +1,19 @@
 from __future__ import annotations
-
-"""Application state definition for the LangGraph workflow."""
-
-from typing import List, Optional
-
-from pydantic import BaseModel, Field
+from typing import List, Callable, Optional
+from pydantic import Field, BaseModel
 
 
 class AgentState(BaseModel):
     """State shared across LangGraph nodes."""
 
     query: str = Field(..., description="Original user query")
-    plan: Optional[List[str]] = Field(None, description="High-level execution plan")
-    current_tool: Optional[str] = Field(None, description="Tool selected for execution")
-    tool_output: Optional[str] = Field(None, description="Result returned by the executed tool")
-    response: Optional[str] = Field(None, description="Final response to the user")
+    plan: List[str] = Field(default_factory=list, description="Execution plan")
+    tool_output: List[str] = Field(default_factory=list, description="Tool results")
+    response: str = Field("", description="Final response to the user")
     iteration: int = Field(0, description="Self-correction loop counter")
+    ui: Optional[Callable[[str], None]] = Field(
+        default=None,
+        exclude=True,
+        repr=False,
+        description="Callback for UI updates",
+    )

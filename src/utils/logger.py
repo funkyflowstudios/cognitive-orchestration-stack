@@ -1,43 +1,63 @@
-from __future__ import annotations
-
-"""Centralized logger for the stack."""
+# In agent_stack/src/utils/logger.py
 
 import logging
-from logging.handlers import RotatingFileHandler
-from pathlib import Path
+from logging.handlers import TimedRotatingFileHandler
+from src.config import get_settings
 
-LOG_DIR = Path(__file__).resolve().parent.parent.parent / "logs"
-LOG_DIR.mkdir(exist_ok=True)
+try:
+    from rich.logging import RichHandler
+    RICH_AVAILABLE = True
+except ImportError:
+    RICH_AVAILABLE = False
 
-log_file = LOG_DIR / "app.log"
+settings = get_settings()
 
-# Standard log format
-_FMT = "%(asctime)s - %(levelname)s - %(name)s - %(message)s"
+# Define the format for log messages
+FORMATTER = logging.Formatter(
+    "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+)
+LOG_FILE = "logs/app.log"
 
-# Use cached configuration to avoid adding handlers multiple times
-def get_logger(name: str | None = None) -> logging.Logger:
-    """Return configured logger instance.
 
-    Creates a rotating file handler (5 MB, 3 backups) and a console stream
-    handler. Both share the same formatter.
+def get_console_handler():
+    """Returns a handler that prints log messages to the console."""
+    if RICH_AVAILABLE:
+        # Use Rich handler for beautiful console output
+        console_handler = RichHandler(
+            rich_tracebacks=True,
+            show_time=True,
+            show_path=False,
+        )
+        console_handler.setFormatter(FORMATTER)
+    else:
+        # Fallback to null handler for clean UI
+        console_handler = logging.NullHandler()
+    return console_handler
+
+
+def get_file_handler():
+    """Returns a handler that writes log messages to a timed rotating file."""
+    # Rotates the log file every day, keeping 7 days of backups
+    file_handler = TimedRotatingFileHandler(
+        LOG_FILE, when='midnight', backupCount=7
+    )
+    file_handler.setFormatter(FORMATTER)
+    return file_handler
+
+
+def get_logger(logger_name: str) -> logging.Logger:
     """
-    # Obtain (or create) logger
-    logger = logging.getLogger(name or "cog-stack")
-    if logger.handlers:
-        return logger
+    Configures and returns a logger with console and file handlers.
+    """
+    logger = logging.getLogger(logger_name)
+    logger.setLevel(settings.log_level.upper())
 
-    logger.setLevel(logging.INFO)
+    # Add handlers only if they haven't been added before
+    if not logger.handlers:
+        logger.addHandler(get_console_handler())
+        logger.addHandler(get_file_handler())
 
-    formatter = logging.Formatter(_FMT)
-
-    # File handler
-    fh = RotatingFileHandler(log_file, maxBytes=5_000_000, backupCount=3)
-    fh.setFormatter(formatter)
-    logger.addHandler(fh)
-
-    # Console handler
-    ch = logging.StreamHandler()
-    ch.setFormatter(formatter)
-    logger.addHandler(ch)
+    # Prevents log messages from being propagated to the root logger
+    logger.propagate = False
 
     return logger
