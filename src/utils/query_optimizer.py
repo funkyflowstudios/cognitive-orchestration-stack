@@ -5,7 +5,7 @@ from __future__ import annotations
 
 import re
 import time
-from typing import Dict, List, Any, Optional
+from typing import Dict, List, Any
 from src.utils.logger import get_logger
 from src.utils.metrics import timing, histogram
 
@@ -15,8 +15,8 @@ logger = get_logger(__name__)
 class QueryOptimizer:
     """Optimizes database queries for better performance.
 
-    Note: This class uses in-memory caching only. If persistent caching is needed,
-    use JSON or other safe serialization formats, never pickle.
+    Note: This class uses in-memory caching only. If persistent caching is
+    needed, use JSON or other safe serialization formats, never pickle.
     """
 
     def __init__(self) -> None:
@@ -34,11 +34,15 @@ class QueryOptimizer:
         # Remove unnecessary whitespace
         optimized = re.sub(r'\s+', ' ', optimized)
 
-        # Add LIMIT if not present and query looks like it might return many results
+        # Add LIMIT if not present and query looks like it might return many
+        # results
         if 'LIMIT' not in optimized.upper() and 'MATCH' in optimized.upper():
             if 'RETURN' in optimized.upper():
                 # Add LIMIT before RETURN
-                optimized = re.sub(r'(\s+RETURN\s+)', r'\1LIMIT 100 ', optimized, flags=re.IGNORECASE)
+                optimized = re.sub(
+                    r'(\s+RETURN\s+)', r'\1LIMIT 100 ', optimized,
+                    flags=re.IGNORECASE
+                )
             else:
                 # Add LIMIT at the end
                 optimized += ' LIMIT 100'
@@ -58,7 +62,8 @@ class QueryOptimizer:
     def _optimize_match_patterns(self, query: str) -> str:
         """Optimize MATCH patterns for better performance."""
         # Use specific labels instead of generic patterns where possible
-        # This is a simplified example - in practice, you'd have more sophisticated rules
+        # This is a simplified example - in practice, you'd have more
+        # sophisticated rules
         return query
 
     def _add_query_hints(self, query: str) -> str:
@@ -76,13 +81,21 @@ class QueryOptimizer:
 
         # Add suggestions based on query analysis
         if 'LIMIT' not in query.upper():
-            suggestions.append("Consider adding LIMIT to prevent large result sets")
+            suggestions.append(
+                "Consider adding LIMIT to prevent large result sets"
+            )
 
         if query.count('MATCH') > 3:
-            suggestions.append("Query has multiple MATCH clauses - consider breaking into smaller queries")
+            suggestions.append(
+                "Query has multiple MATCH clauses - consider breaking into "
+                "smaller queries"
+            )
 
         if 'ORDER BY' in query.upper() and 'LIMIT' not in query.upper():
-            suggestions.append("ORDER BY without LIMIT may be expensive - consider adding LIMIT")
+            suggestions.append(
+                "ORDER BY without LIMIT may be expensive - consider adding "
+                "LIMIT"
+            )
 
         analysis = {
             "original_query": query,
@@ -94,7 +107,8 @@ class QueryOptimizer:
         return analysis
 
     def _calculate_complexity_score(self, query: str) -> int:
-        """Calculate a complexity score for the query (0-100, higher = more complex)."""
+        """Calculate a complexity score for the query (0-100, higher = more
+        complex)."""
         score = 0
 
         # Count various complexity factors
