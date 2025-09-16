@@ -54,13 +54,13 @@ class Planner:
                 prompt
             )
             response_text = response.get('response', '')
-            
+
             # Clean up response text to extract JSON
             if '```json' in response_text:
                 response_text = response_text.split('```json')[1].split('```')[0]
             elif '```' in response_text:
                 response_text = response_text.split('```')[1].split('```')[0]
-            
+
             plan_json = yaml.safe_load(response_text)
             research_plan = plan_json.get("research_plan", {})
             # Ensure research_plan is a dict, not a list
@@ -137,13 +137,13 @@ class Validator:
                     prompt
                 )
                 response_text = response.get('response', '')
-                
+
                 # Clean up response text to extract JSON
                 if '```json' in response_text:
                     response_text = response_text.split('```json')[1].split('```')[0]
                 elif '```' in response_text:
                     response_text = response_text.split('```')[1].split('```')[0]
-                
+
                 validation_json = yaml.safe_load(response_text)
                 content_ref.validation_score = validation_json.get("validation_score", 0.0)
                 content_ref.validation_notes = validation_json.get("validation_notes", "Validation failed.")

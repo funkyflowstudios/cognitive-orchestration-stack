@@ -68,25 +68,25 @@ def _load_spacy() -> spacy.language.Language:  # noqa: D401
 
 def parse_yaml_frontmatter(content: str) -> tuple[Dict[str, Any], str]:
     """Parse YAML frontmatter from Markdown content.
-    
+
     Args:
         content: The full content of the file
-        
+
     Returns:
         Tuple of (metadata_dict, content_without_frontmatter)
     """
     # Check if content starts with YAML frontmatter
     if not content.startswith('---'):
         return {}, content
-    
+
     # Find the end of frontmatter
     parts = content.split('---', 2)
     if len(parts) < 3:
         return {}, content
-    
+
     frontmatter_text = parts[1].strip()
     content_without_frontmatter = parts[2].strip()
-    
+
     try:
         metadata = yaml.safe_load(frontmatter_text) or {}
         return metadata, content_without_frontmatter
@@ -102,30 +102,30 @@ def parse_documents(source_dir: Path) -> List[Document]:  # noqa: D401
     for file_path in source_dir.rglob("*.*"):
         if file_path.is_dir():
             continue
-        
+
         # Skip temporary files
         if file_path.name.endswith('.tmp'):
             logger.info("Skipping temporary file: %s", file_path.name)
             continue
-            
+
         logger.info("Parsing %s", file_path.name)
-        
+
         # Handle ARIS-generated Markdown files with YAML frontmatter
         if file_path.suffix.lower() == '.md':
             try:
                 with open(file_path, 'r', encoding='utf-8') as f:
                     content = f.read()
-                
+
                 # Parse YAML frontmatter
                 metadata, clean_content = parse_yaml_frontmatter(content)
-                
+
                 # Add file-specific metadata
                 metadata.update({
                     "filename": file_path.name,
                     "source": "aris",
                     "file_type": "markdown"
                 })
-                
+
                 docs.append(
                     Document(
                         text=clean_content,
@@ -134,11 +134,11 @@ def parse_documents(source_dir: Path) -> List[Document]:  # noqa: D401
                 )
                 logger.info("Parsed ARIS document with metadata: %s", list(metadata.keys()))
                 continue
-                
+
             except Exception as exc:
                 logger.error("Failed parsing ARIS document %s: %s", file_path.name, exc)
                 continue
-        
+
         # Handle other file types with unstructured
         try:
             elements = partition(str(file_path))
