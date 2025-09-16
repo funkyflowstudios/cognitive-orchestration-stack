@@ -12,7 +12,8 @@ logger = get_logger(__name__)
 
 
 class ChromaDBAgent:
-    """Wrapper around ChromaDB client for similarity search with LRU caching."""
+    """Wrapper around ChromaDB client for similarity search with LRU
+    caching."""
 
     _client: chromadb.Client | None = None
     _embedding_function: OllamaEmbedding | None = None
@@ -34,8 +35,11 @@ class ChromaDBAgent:
         self._embedding_function = ChromaDBAgent._embedding_function
         logger.info("ChromaDB collection '%s' ready", collection_name)
 
-    def similarity_search(self, query: str, n_results: int = 5) -> List[str]:
-        """Return the content of the most similar documents with LRU caching."""
+    def similarity_search(
+        self, query: str, n_results: int = 5
+    ) -> List[str]:
+        """Return the content of the most similar documents with LRU
+        caching."""
         return self._cached_search(query, n_results)
 
     @lru_cache(maxsize=128)
