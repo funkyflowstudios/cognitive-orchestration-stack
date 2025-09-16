@@ -226,9 +226,7 @@ def tool_executor_node(state: AgentState) -> dict:
                     except RuntimeError:
                         # No event loop running, create a new one
                         try:
-                            output = asyncio.run(
-                                output  # type: ignore[arg-type]
-                            )
+                            output = asyncio.run(output)
                         except Exception as e:
                             logger.error(
                                 "Error running async tool %s: %s",
