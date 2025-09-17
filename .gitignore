@@ -7,6 +7,8 @@ __pycache__/
 
 # Test files
 /tests/
+./tests/
+tests/
 
 # Virtual environments
 venv/
