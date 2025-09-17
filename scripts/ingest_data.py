@@ -22,10 +22,7 @@ import spacy
 import yaml
 from unstructured.partition.auto import partition
 from unstructured.partition.common import UnsupportedFileFormatError
-from llama_index.core import (
-    Document,
-    VectorStoreIndex,
-)
+from llama_index.core import Document
 from llama_index.embeddings.ollama import (
     OllamaEmbedding,
 )
@@ -190,14 +187,41 @@ def ingest(source_dir: Path) -> None:  # noqa: D401
     # Embedding + ChromaDB via LlamaIndex
     # ------------------------------------
     embed_model = OllamaEmbedding(
-        model_name=settings.ollama_model,
+        model_name=settings.ollama_embedding_model,
         base_url=settings.ollama_host,
     )
-    VectorStoreIndex.from_documents(  # noqa: E501
-        docs,
-        embed_model=embed_model,
-        vector_store=ChromaDBAgent()._collection,
-    )
+
+    # Create ChromaDB agent and get the collection
+    chroma_agent = ChromaDBAgent()
+    collection = chroma_agent._collection
+
+    # Create embeddings for each document and add to ChromaDB
+    for i, doc in enumerate(docs):
+        # Skip empty documents
+        if not doc.text or len(doc.text.strip()) == 0:
+            logger.warning(
+                f"Skipping empty document {i}: {doc.metadata.get('filename', 'unknown')}"
+            )
+            continue
+
+        try:
+            # Generate embedding for the document
+            embedding = embed_model.get_text_embedding(doc.text)
+
+            # Add document to ChromaDB collection
+            collection.add(
+                documents=[doc.text],
+                embeddings=[embedding],
+                metadatas=[doc.metadata],
+                ids=[f"doc_{i}"]
+            )
+            logger.debug(
+                f"Added document {i} to ChromaDB: {doc.metadata.get('filename', 'unknown')}"
+            )
+        except Exception as e:
+            logger.error(f"Failed to process document {i}: {e}")
+            continue
+
     logger.info("Embedded %d documents into ChromaDB", len(docs))
 
     # ------------------------------------

@@ -12,6 +12,7 @@ from .screens.query import QueryScreen
 from .screens.ingest import IngestScreen
 from .screens.aris import ArisScreen
 from .screens.status import StatusScreen
+from .widgets.clipboard_input import ClipboardInput
 
 
 class CosApp(App):
@@ -19,10 +20,17 @@ class CosApp(App):
 
     CSS_PATH = "cos.tcss"  # Load the stylesheet
 
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self._clipboard_text = ""
+
     # Define key bindings for global actions
     BINDINGS = [
-        ("q", "quit", "Quit"),
-        ("ctrl+c", "quit", "Quit"),
+        ("ctrl+q", "quit", "Quit"),
+        ("ctrl+c", "copy", "Copy"),
+        ("ctrl+v", "paste", "Paste"),
+        ("ctrl+x", "cut", "Cut"),
+        ("ctrl+a", "select_all", "Select All"),
     ]
 
     # Define all the screens the app can display
@@ -42,6 +50,37 @@ class CosApp(App):
     def action_quit(self) -> None:
         """Quit the application."""
         self.exit()
+
+    def action_copy(self) -> None:
+        """Copy text from focused input widget."""
+        focused = self.focused
+        if isinstance(focused, ClipboardInput):
+            text = focused.selected_text or focused.value
+            if text:
+                self._clipboard_text = text
+                focused.set_clipboard_text(text)
+
+    def action_paste(self) -> None:
+        """Paste text to focused input widget."""
+        focused = self.focused
+        if isinstance(focused, ClipboardInput) and self._clipboard_text:
+            focused._paste_text(self._clipboard_text)
+
+    def action_cut(self) -> None:
+        """Cut text from focused input widget."""
+        focused = self.focused
+        if isinstance(focused, ClipboardInput):
+            text = focused.selected_text or focused.value
+            if text:
+                self._clipboard_text = text
+                focused.value = ""
+                focused.set_clipboard_text(text)
+
+    def action_select_all(self) -> None:
+        """Select all text in focused input widget."""
+        focused = self.focused
+        if isinstance(focused, ClipboardInput):
+            focused.selection = (0, len(focused.value))
 
     def on_unmount(self) -> None:
         """Called when the app is unmounted."""

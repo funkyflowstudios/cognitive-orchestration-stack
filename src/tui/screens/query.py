@@ -5,12 +5,13 @@ from typing import Optional
 
 from textual.app import ComposeResult
 from textual.screen import Screen
-from textual.widgets import Header, Footer, Input, RichLog
+from textual.widgets import Header, Footer, RichLog, Input
 from textual.containers import Vertical
 from textual.worker import Worker
 
 # Import the actual backend orchestration
 from src.orchestration.graph import GRAPH
+from ..widgets.clipboard_input import ClipboardInput
 from src.orchestration.state import AgentState
 
 
@@ -19,8 +20,11 @@ class QueryScreen(Screen):
 
     BINDINGS = [
         ("b", "back", "Back to Menu"),
-        ("q", "quit", "Quit"),
-        ("ctrl+c", "quit", "Quit"),
+        ("ctrl+q", "quit", "Quit"),
+        ("ctrl+c", "copy", "Copy"),
+        ("ctrl+v", "paste", "Paste"),
+        ("ctrl+x", "cut", "Cut"),
+        ("ctrl+a", "select_all", "Select All"),
     ]
 
     def __init__(self) -> None:
@@ -34,7 +38,7 @@ class QueryScreen(Screen):
         with Vertical(id="query-container"):
             # Use RichLog for styled, scrollable conversation history
             yield RichLog(id="conversation-log", wrap=True, highlight=True)
-            yield Input(
+            yield ClipboardInput(
                 placeholder="Type your query here...", id="query-input"
             )
         yield Footer()
@@ -42,9 +46,11 @@ class QueryScreen(Screen):
     def on_mount(self) -> None:
         """Called when the screen is mounted."""
         # Focus on the input field
-        self.query_one("#query-input", Input).focus()
+        self.query_one("#query-input", ClipboardInput).focus()
 
-    async def on_input_submitted(self, event: Input.Submitted) -> None:
+    async def on_input_submitted(
+        self, event: Input.Submitted
+    ) -> None:
         """Handle when the user submits a query."""
         query_text = event.value.strip()
         if not query_text:
@@ -53,13 +59,13 @@ class QueryScreen(Screen):
         log = self.query_one("#conversation-log", RichLog)
 
         # Display the user's query
-        log.write(f"[bold cyan]You:[/bold cyan] {query_text}")
+        log.write(f"👤 You: {query_text}")
 
         # Clear the input for the next query
         event.input.clear()
 
         # Show a thinking indicator and run the backend call in a worker thread
-        log.write("[bold yellow]Agent is thinking...[/bold yellow]")
+        log.write("🤔 Agent is thinking...")
 
         # Cancel any existing worker
         if self._current_worker and not self._current_worker.is_finished:
@@ -79,7 +85,7 @@ class QueryScreen(Screen):
             # Update UI to show we're starting
             self.call_later(
                 self._update_conversation_log,
-                "[bold yellow]🤖 Initializing AI agent...[/bold yellow]",
+                "🤖 Initializing AI agent...",
             )
 
             # Create UI callback for progress updates
@@ -87,18 +93,18 @@ class QueryScreen(Screen):
                 if msg == "planning_complete":
                     self.call_later(
                         self._update_conversation_log,
-                        "[bold blue]📋 Planning complete, executing tools...[/bold blue]",
+                        "📋 Planning complete, executing tools...",
                     )
                 elif msg.startswith("tool_start:"):
                     tool = msg.split(":", 1)[1]
                     self.call_later(
                         self._update_conversation_log,
-                        f"[bold cyan]🔧 Executing: {tool}[/bold cyan]",
+                        f"🔧 Executing: {tool}",
                     )
                 elif msg == "synth_start":
                     self.call_later(
                         self._update_conversation_log,
-                        "[bold magenta]🧠 Synthesizing response...[/bold magenta]",
+                        "🧠 Synthesizing response...",
                     )
 
             # Create the agent state with UI callback
@@ -113,19 +119,19 @@ class QueryScreen(Screen):
             # Display the response
             self.call_later(
                 self._update_conversation_log,
-                f"[bold green]Agent:[/bold green] {response}",
+                f"🤖 Agent: {response}",
             )
 
         except asyncio.CancelledError:
             # Handle cancellation gracefully
             self.call_later(
                 self._update_conversation_log,
-                "[yellow]Query cancelled[/yellow]",
+                "⚠️ Query cancelled",
             )
         except Exception as e:
             self.call_later(
                 self._update_conversation_log,
-                f"[bold red]Error:[/bold red] {str(e)}",
+                f"❌ Error: {str(e)}",
             )
 
     def _update_conversation_log(self, message: str) -> None:
@@ -140,3 +146,19 @@ class QueryScreen(Screen):
     def action_quit(self) -> None:
         """Quit the application."""
         self.app.exit()
+
+    def action_copy(self) -> None:
+        """Copy text from focused input widget."""
+        self.app.action_copy()
+
+    def action_paste(self) -> None:
+        """Paste text to focused input widget."""
+        self.app.action_paste()
+
+    def action_cut(self) -> None:
+        """Cut text from focused input widget."""
+        self.app.action_cut()
+
+    def action_select_all(self) -> None:
+        """Select all text in focused input widget."""
+        self.app.action_select_all()

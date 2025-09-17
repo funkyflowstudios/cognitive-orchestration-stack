@@ -12,7 +12,7 @@ from textual.containers import Vertical, Horizontal
 from textual.worker import Worker
 
 # Import the actual backend health check functions
-from src.api.health import liveness_check, readiness_check
+from src.api.health import liveness_check
 from src.tools.neo4j_agent import Neo4jAgent
 from src.tools.chromadb_agent import ChromaDBAgent
 
@@ -23,8 +23,11 @@ class StatusScreen(Screen):
     BINDINGS = [
         ("r", "refresh", "Refresh Status"),
         ("b", "back", "Back to Menu"),
-        ("q", "quit", "Quit"),
-        ("ctrl+c", "quit", "Quit"),
+        ("ctrl+q", "quit", "Quit"),
+        ("ctrl+c", "copy", "Copy"),
+        ("ctrl+v", "paste", "Paste"),
+        ("ctrl+x", "cut", "Cut"),
+        ("ctrl+a", "select_all", "Select All"),
     ]
 
     def __init__(self) -> None:
@@ -97,11 +100,11 @@ class StatusScreen(Screen):
 
             # Color code the status
             if status == "Healthy":
-                status_display = f"[green]{status}[/green]"
+                status_display = f"✅ {status}"
             elif status == "Warning":
-                status_display = f"[yellow]{status}[/yellow]"
+                status_display = f"⚠️ {status}"
             elif status == "Error":
-                status_display = f"[red]{status}[/red]"
+                status_display = f"❌ {status}"
             else:
                 status_display = status
 
@@ -123,9 +126,13 @@ class StatusScreen(Screen):
             try:
                 # Use liveness check for basic API status
                 api_health = await liveness_check()
+                api_status = (
+                    "Healthy" if api_health.get("status") == "alive" else "Error"
+                )
+                service_name = api_health.get('service', 'Unknown')
                 status_data["API Server"] = {
-                    "status": "Healthy" if api_health.get("status") == "alive" else "Error",
-                    "details": f"Service: {api_health.get('service', 'Unknown')}",
+                    "status": api_status,
+                    "details": f"Service: {service_name}",
                     "last_check": current_time,
                 }
             except Exception as e:
@@ -156,9 +163,12 @@ class StatusScreen(Screen):
                 chroma_agent = ChromaDBAgent()
                 # Try to get collection info
                 collections = chroma_agent.get_collections()
+                collection_count = len(collections)
                 status_data["ChromaDB"] = {
                     "status": "Healthy",
-                    "details": f"Vector store operational ({len(collections)} collections)",
+                    "details": (
+                        f"Vector store operational ({collection_count} collections)"
+                    ),
                     "last_check": current_time,
                 }
             except Exception as e:
@@ -220,3 +230,19 @@ class StatusScreen(Screen):
     def action_quit(self) -> None:
         """Quit the application."""
         self.app.exit()
+
+    def action_copy(self) -> None:
+        """Copy text from focused input widget."""
+        self.app.action_copy()
+
+    def action_paste(self) -> None:
+        """Paste text to focused input widget."""
+        self.app.action_paste()
+
+    def action_cut(self) -> None:
+        """Cut text from focused input widget."""
+        self.app.action_cut()
+
+    def action_select_all(self) -> None:
+        """Select all text in focused input widget."""
+        self.app.action_select_all()

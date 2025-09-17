@@ -4,7 +4,6 @@ Individual processing nodes for the research pipeline.
 """
 
 import sys
-import tempfile
 from pathlib import Path
 
 import yaml
@@ -47,16 +46,16 @@ class Planner:
     def run(state: ResearchState) -> ResearchState:
         print("--- Node: Planner ---")
         prompt = (
-            f"""You are a world-class research analyst. Create a structured """
-            f"""research plan for the topic: "{state.topic}".
-        Generate a JSON object with two keys:
-        1. "research_plan": A concise, step-by-step plan.
-        2. "search_queries": A list of 4 high-quality, diverse search engine
-           queries to execute this plan. Use specific, targeted keywords and
-           include terms like "best", "top", "popular", "professional", "review"
-           to get better search results. Focus on English-language sources.
-        Return ONLY the raw JSON object.
-        """
+            f"You are a world-class research analyst. Create a structured "
+            f"research plan for the topic: \"{state.topic}\".\n"
+            f"Generate a JSON object with two keys:\n"
+            f"1. \"research_plan\": A concise, step-by-step plan.\n"
+            f"2. \"search_queries\": A list of 4 high-quality, diverse search "
+            f"engine queries to execute this plan. Use specific, targeted "
+            f"keywords and include terms like \"best\", \"top\", \"popular\", "
+            f"\"professional\", \"review\" to get better search results. "
+            f"Focus on English-language sources.\n"
+            f"Return ONLY the raw JSON object."
         )
 
         try:
@@ -259,7 +258,13 @@ class Synthesizer:
 def initialize_job(state: ResearchState) -> ResearchState:
     """Initialize a new research job with scratch directory."""
     logger.info(f"Initializing job {state.job_id} for topic: {state.topic}")
-    scratch_dir = Path(tempfile.mkdtemp(prefix=f"aris_{state.job_id}_"))
+
+    # Create scratch directory within the project workspace
+    project_root = Path(__file__).parent.parent.parent.parent
+    scratch_base = project_root / "scratch"
+    scratch_base.mkdir(exist_ok=True)
+
+    scratch_dir = scratch_base / f"aris_{state.job_id}"
     state.job_scratch_dir = scratch_dir
     scratch_dir.mkdir(parents=True, exist_ok=True)
     logger.info(f"Created scratch directory: {scratch_dir}")

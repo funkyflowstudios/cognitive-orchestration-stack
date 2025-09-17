@@ -11,8 +11,11 @@ class MainMenuScreen(Screen):
     """The main menu screen for the application."""
 
     BINDINGS = [
-        ("q", "quit", "Quit"),
-        ("ctrl+c", "quit", "Quit"),
+        ("ctrl+q", "quit", "Quit"),
+        ("ctrl+c", "copy", "Copy"),
+        ("ctrl+v", "paste", "Paste"),
+        ("ctrl+x", "cut", "Cut"),
+        ("ctrl+a", "select_all", "Select All"),
     ]
 
     def compose(self) -> ComposeResult:
@@ -45,3 +48,19 @@ class MainMenuScreen(Screen):
     def action_quit(self) -> None:
         """Quit the application."""
         self.app.exit()
+
+    def action_copy(self) -> None:
+        """Copy text from focused input widget."""
+        self.app.action_copy()
+
+    def action_paste(self) -> None:
+        """Paste text to focused input widget."""
+        self.app.action_paste()
+
+    def action_cut(self) -> None:
+        """Cut text from focused input widget."""
+        self.app.action_cut()
+
+    def action_select_all(self) -> None:
+        """Select all text in focused input widget."""
+        self.app.action_select_all()

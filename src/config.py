@@ -67,7 +67,7 @@ class Settings(BaseSettings):
     # --- Search API Configuration (Optional) ---
     # Bing Web Search API (Recommended - much easier than Google Cloud)
     bing_api_key: Optional[str] = None
-    
+
     # Google Custom Search API (Alternative - requires Google Cloud setup)
     google_api_key: Optional[str] = None
     google_cse_id: Optional[str] = None
