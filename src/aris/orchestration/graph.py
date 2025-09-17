@@ -48,7 +48,9 @@ def create_research_graph() -> StateGraph:
     return create_graph()
 
 
-def run_research_job(topic: str, job_id: Optional[str] = None) -> Dict[str, Any]:
+def run_research_job(
+    topic: str, job_id: Optional[str] = None
+) -> Dict[str, Any]:
     """Run a complete research job using the ARIS workflow.
 
     Args:
@@ -60,6 +62,7 @@ def run_research_job(topic: str, job_id: Optional[str] = None) -> Dict[str, Any]
     """
     import uuid
     from pathlib import Path
+    from .nodes import initialize_job
 
     if job_id is None:
         job_id = str(uuid.uuid4())
@@ -73,6 +76,9 @@ def run_research_job(topic: str, job_id: Optional[str] = None) -> Dict[str, Any]
         job_scratch_dir=Path(""),  # Will be set by initialize_job
     )
 
+    # Initialize the job with proper scratch directory
+    initial_state = initialize_job(initial_state)
+
     # Create and run the graph
     graph = create_research_graph()
 
@@ -85,19 +91,19 @@ def run_research_job(topic: str, job_id: Optional[str] = None) -> Dict[str, Any]
             "topic": topic,
             "status": "completed",
             "output_path": (
-                str(final_state.final_output_path)
-                if final_state.final_output_path
+                str(final_state.get("final_output_path"))
+                if final_state.get("final_output_path")
                 else None
             ),
-            "sources_found": len(final_state.scraped_content_references),
+            "sources_found": len(final_state.get("scraped_content_references", [])),
             "validated_sources": len(
                 [
                     ref
-                    for ref in final_state.scraped_content_references
-                    if ref.is_validated
+                    for ref in final_state.get("scraped_content_references", [])
+                    if getattr(ref, "is_validated", False)
                 ]
             ),
-            "error": final_state.error_message,
+            "error": final_state.get("error_message"),
         }
 
         logger.info(f"Research job {job_id} completed successfully")
@@ -105,4 +111,9 @@ def run_research_job(topic: str, job_id: Optional[str] = None) -> Dict[str, Any]
 
     except Exception as e:
         logger.error(f"Research job {job_id} failed: {e}")
-        return {"job_id": job_id, "topic": topic, "status": "failed", "error": str(e)}
+        return {
+            "job_id": job_id,
+            "topic": topic,
+            "status": "failed",
+            "error": str(e),
+        }

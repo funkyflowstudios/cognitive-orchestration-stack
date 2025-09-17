@@ -46,7 +46,9 @@ class SafeJSONParser:
     }
 
     @classmethod
-    def validate_planner_response(cls, data: Dict[str, Any]) -> Dict[str, List[str]]:
+    def validate_planner_response(
+        cls, data: Dict[str, Any]
+    ) -> Dict[str, List[str]]:
         """
         Validate and parse planner response with schema validation.
 
@@ -77,13 +79,17 @@ class SafeJSONParser:
             }
             invalid_tools = set(plan) - valid_tools
             if invalid_tools:
-                raise SchemaValidationError(f"Invalid tools in plan: {invalid_tools}")
+                raise SchemaValidationError(
+                    f"Invalid tools in plan: {invalid_tools}"
+                )
 
             return {"plan": plan}
 
         except ValidationError as e:
             logger.error("Schema validation failed: %s", e.message)
-            raise SchemaValidationError(f"Schema validation failed: {e.message}")
+            raise SchemaValidationError(
+                f"Schema validation failed: {e.message}"
+            )
         except Exception as e:
             logger.error("Unexpected error during validation: %s", str(e))
             raise SchemaValidationError(f"Validation error: {str(e)}")
@@ -160,7 +166,9 @@ def sanitize_user_input(user_input: str) -> str:
         if pattern.lower() in sanitized.lower():
             logger.warning("Potential prompt injection detected: %s", pattern)
             # Remove the pattern and everything after it
-            sanitized = sanitized[: sanitized.lower().find(pattern.lower())].strip()
+            sanitized = sanitized[
+                : sanitized.lower().find(pattern.lower())
+            ].strip()
 
     # Limit length to prevent extremely long inputs
     max_length = 10000

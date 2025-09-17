@@ -59,7 +59,9 @@ class FocusController:  # noqa: D101
     # --------------------------- API ------------------------------------
 
     def set_planning(self) -> None:  # noqa: D401
-        self._current_renderable = Spinner("dots", text=" [🧠 PLANNING] Thinking...")
+        self._current_renderable = Spinner(
+            "dots", text=" [🧠 PLANNING] Thinking..."
+        )
         self._live.update(self._current_renderable)
 
     def set_executing(self, tool: str) -> None:  # noqa: D401

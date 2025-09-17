@@ -146,7 +146,9 @@ def play_cognitive_bloom_animation() -> None:  # noqa: D401
                 particles.remove(p)
 
         # Prepare blank grid
-        grid: list[list[str]] = [[" " for _ in range(cols)] for _ in range(rows)]
+        grid: list[list[str]] = [
+            [" " for _ in range(cols)] for _ in range(rows)
+        ]
         for p in particles:
             x_i = int(round(p.x))
             y_i = int(round(p.y))
@@ -187,7 +189,8 @@ def play_graceful_exit_animation() -> None:  # noqa: D401
         rows_chars: list[str] = []
         for _ in range(rows):
             line = "".join(
-                random.choice(grey_chars[: int(density * 4) or 1]) for _ in range(cols)
+                random.choice(grey_chars[: int(density * 4) or 1])
+                for _ in range(cols)
             )
             rows_chars.append(line)
         frame_strings.append("\n".join(rows_chars))
@@ -196,7 +199,9 @@ def play_graceful_exit_animation() -> None:  # noqa: D401
     left, right = 0, cols - 1
     top, bottom = 0, rows - 1
     while left < right and top < bottom:
-        grid_matrix: list[list[str]] = [[" " for _ in range(cols)] for _ in range(rows)]
+        grid_matrix: list[list[str]] = [
+            [" " for _ in range(cols)] for _ in range(rows)
+        ]
         for x in range(left, right + 1):
             if 0 <= top < rows:
                 grid_matrix[top][x] = "░"

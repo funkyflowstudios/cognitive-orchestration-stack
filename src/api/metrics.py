@@ -21,7 +21,9 @@ async def get_metrics_endpoint():
         return get_metrics()
     except Exception as e:
         logger.error("Error getting metrics: %s", e)
-        raise HTTPException(status_code=500, detail=f"Error getting metrics: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Error getting metrics: {str(e)}"
+        )
 
 
 @router.get("/dashboard")
@@ -154,7 +156,8 @@ async def reset_metrics_endpoint():
     except Exception as e:
         logger.error("Failed to reset metrics: %s", e)
         raise HTTPException(
-            status_code=500, detail={"error": f"Failed to reset metrics: {str(e)}"}
+            status_code=500,
+            detail={"error": f"Failed to reset metrics: {str(e)}"},
         )
 
 

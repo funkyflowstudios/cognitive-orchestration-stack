@@ -156,7 +156,7 @@ def get_logger(logger_name: str) -> Any:
         if not _structured_logging_configured:
             configure_structured_logging(
                 log_level=settings.log_level,
-                use_json=os.getenv("APP_ENV") == "prod"
+                use_json=os.getenv("APP_ENV") == "prod",
             )
             _structured_logging_configured = True
 

@@ -5,7 +5,8 @@ from pydantic_settings import SettingsConfigDict  # NEW
 """Global configuration management for the Cognitive Orchestration Stack.
 
 Load settings from environment variables (.env) using pydantic BaseSettings for
-validation and type-safety. Supports HashiCorp Vault for production secrets management.
+validation and type-safety. Supports HashiCorp Vault for production secrets
+management.
 """
 
 import logging
@@ -17,6 +18,7 @@ from typing import Any, Dict, Optional
 try:
     from pydantic_settings import BaseSettings  # Preferred (Pydantic v2)
 except ImportError:  # Ultimate fallback – minimal stub for v1 users
+
     class BaseSettings(Any):  # type: ignore
         """Stub BaseSettings for environments lacking pydantic-settings."""
 
@@ -62,6 +64,14 @@ class Settings(BaseSettings):
     ollama_model: str = "llama3"
     ollama_embedding_model: str  # This was the missing field
 
+    # --- Search API Configuration (Optional) ---
+    # Bing Web Search API (Recommended - much easier than Google Cloud)
+    bing_api_key: Optional[str] = None
+
+    # Google Custom Search API (Alternative - requires Google Cloud setup)
+    google_api_key: Optional[str] = None
+    google_cse_id: Optional[str] = None
+
     # --- Validators ---
 
     @classmethod
@@ -95,7 +105,10 @@ class Settings(BaseSettings):
 
 
 def load_vault_secrets(
-    vault_addr: str, vault_token: str, secret_path: str, mount_point: str = "secret"
+    vault_addr: str,
+    vault_token: str,
+    secret_path: str,
+    mount_point: str = "secret",
 ) -> Dict[str, Any]:
     """
     Load secrets from HashiCorp Vault.
@@ -114,7 +127,8 @@ def load_vault_secrets(
     """
     if not VAULT_AVAILABLE:
         raise ImportError(
-            "hvac package is required for Vault integration. Install with: pip install hvac"
+            "hvac package is required for Vault integration. "
+            "Install with: pip install hvac"
         )
 
     try:
@@ -143,21 +157,27 @@ def load_environment_config(env: str = "dev") -> None:
     Args:
         env: Environment name (dev, prod, etc.)
     """
-    config_file = Path(__file__).resolve().parent.parent / "config" / f"{env}.env"
+    config_file = (
+        Path(__file__).resolve().parent.parent / "config" / f"{env}.env"
+    )
 
     if config_file.exists():
         load_dotenv(dotenv_path=config_file, override=True)
         logging.info(f"Loaded environment configuration from {config_file}")
     else:
-        logging.warning(f"Environment configuration file not found: {config_file}")
+        logging.warning(
+            f"Environment configuration file not found: {config_file}"
+        )
 
 
 def get_settings() -> Settings:  # noqa: D401
     """
-    Return Settings instance with optional Vault integration and environment-specific config.
+    Return Settings instance with optional Vault integration and
+    environment-specific config.
 
-    Loads environment-specific configuration first, then optionally loads secrets from Vault.
-    Falls back to environment variables and .env file if Vault is not configured.
+    Loads environment-specific configuration first, then optionally loads
+    secrets from Vault. Falls back to environment variables and .env file if
+    Vault is not configured.
     """
     # Determine environment from APP_ENV or default to 'dev'
     app_env = os.getenv("APP_ENV", "dev")
@@ -181,19 +201,27 @@ def get_settings() -> Settings:  # noqa: D401
             # Create a new Settings instance with Vault secrets
             # This overrides environment variables with Vault values
             vault_env_vars = {
-                "NEO4J_URI": vault_secrets.get("neo4j_uri", settings.neo4j_uri),
-                "NEO4J_USER": vault_secrets.get("neo4j_user", settings.neo4j_user),
+                "NEO4J_URI": vault_secrets.get(
+                    "neo4j_uri", settings.neo4j_uri
+                ),
+                "NEO4J_USER": vault_secrets.get(
+                    "neo4j_user", settings.neo4j_user
+                ),
                 "NEO4J_PASSWORD": vault_secrets.get(
                     "neo4j_password", settings.neo4j_password
                 ),
-                "OLLAMA_HOST": vault_secrets.get("ollama_host", settings.ollama_host),
+                "OLLAMA_HOST": vault_secrets.get(
+                    "ollama_host", settings.ollama_host
+                ),
                 "OLLAMA_MODEL": vault_secrets.get(
                     "ollama_model", settings.ollama_model
                 ),
                 "OLLAMA_EMBEDDING_MODEL": vault_secrets.get(
                     "ollama_embedding_model", settings.ollama_embedding_model
                 ),
-                "LOG_LEVEL": vault_secrets.get("log_level", settings.log_level),
+                "LOG_LEVEL": vault_secrets.get(
+                    "log_level", settings.log_level
+                ),
             }
 
             # Update environment variables temporarily
@@ -206,7 +234,8 @@ def get_settings() -> Settings:  # noqa: D401
 
         except Exception as e:
             logging.warning(
-                f"Failed to load secrets from Vault, falling back to environment variables: {e}"
+                f"Failed to load secrets from Vault, falling back to "
+                f"environment variables: {e}"
             )
             # Return the original settings if Vault fails
             return settings
