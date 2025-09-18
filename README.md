@@ -169,8 +169,18 @@ poetry install
 # 5. Configure environment variables
 cp env.example .env  # copy template
 # Open .env and fill in:
+
+# Core functionality (required):
 #   - NEO4J_URI, NEO4J_USER, NEO4J_PASSWORD (set strong password!)
 #   - OLLAMA_HOST, OLLAMA_MODEL, OLLAMA_EMBEDDING_MODEL
+
+# Search APIs (optional - system works without them):
+#   - SERPAPI_KEY (primary search - multiple engines, language filtering)
+#   - BRAVE_API_KEY (secondary search - privacy-focused)
+#   - GOOGLE_API_KEY, GOOGLE_CSE_ID (alternative - requires Google Cloud)
+#   - DUCKDUCKGO_LANGUAGE, DUCKDUCKGO_REGION (fallback search settings)
+
+# System configuration:
 #   - LOG_LEVEL (optional)
 #   - APP_ENV (dev/prod) - determines which config file to load
 
@@ -324,6 +334,30 @@ The system supports multiple environments with automatic configuration loading:
 - **Development**: Uses `config/dev.env` with debug logging
 - **Production**: Uses `config/prod.env` with JSON structured logging and Vault integration
 - **Custom**: Set `APP_ENV` to load `config/{env}.env`
+
+#### 🔐 Secure Development Setup
+
+**IMPORTANT**: API keys and passwords are stored in environment files that are **NOT committed to git** for security.
+
+**Quick Setup:**
+```bash
+# Run the setup script
+python scripts/setup_dev_env.py
+
+# Or manually copy the template
+cp config/dev.env.template config/dev.env
+```
+
+**Then edit `config/dev.env` with your actual credentials:**
+- `NEO4J_PASSWORD`: Your Neo4j database password
+- `SERPAPI_KEY`: Get from [SerpAPI](https://serpapi.com/)
+- `BRAVE_API_KEY`: Get from [Brave Search API](https://brave.com/search/api/)
+
+**Security Notes:**
+- ✅ `config/dev.env` is gitignored (never committed)
+- ✅ `config/dev.env.template` is safe to commit (no secrets)
+- ✅ Never share your `dev.env` file
+- ✅ Use different credentials for production
 
 ## License
 

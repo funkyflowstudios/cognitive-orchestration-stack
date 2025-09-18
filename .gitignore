@@ -17,6 +17,8 @@ venv/
 .conda/
 *.env
 .env
+dev.env
+*dev.env
 
 # IDEs and editors
 .vscode/
@@ -28,6 +30,8 @@ venv/
 /data/
 /models/
 /db/
+/chroma_db/
+/scratch/
 
 # Logs
 /logs/
@@ -92,6 +96,10 @@ ENV/
 env.bak/
 venv.bak/
 
+# Environment files (contain secrets - never commit!)
+config/*.env
+!config/*.env.template
+
 # mypy
 .mypy_cache/
 .dmypy.json
@@ -101,3 +109,47 @@ dmypy.json
 .pyre/
 
 # Other files
+.cursor/
+
+# Security and test results
+security-results.json
+test_results.txt
+*.log
+*.log.*
+
+# Temporary files
+*.tmp
+*.temp
+
+# Generated files and caches
+*.cache
+.cache/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Application specific
+*.db
+*.sqlite
+*.sqlite3
+*.log
+
+# Debug and test logs
+tests/debug_tests/*.log
