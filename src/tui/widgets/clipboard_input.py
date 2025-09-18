@@ -22,6 +22,20 @@ class ClipboardInput(Input):
         super().__init__(*args, **kwargs)
         self._clipboard_text = ""
 
+    @property
+    def selected_text(self) -> str:
+        """Get selected text from the input."""
+        try:
+            # Get selection range
+            selection = getattr(self, 'selection', None)
+            if selection and len(selection) == 2:
+                start, end = selection
+                if start != end:  # There is a selection
+                    return self.value[start:end]
+            return ""
+        except Exception:
+            return ""
+
     def _get_system_clipboard(self) -> str:
         """Get text from system clipboard."""
         try:
@@ -62,7 +76,8 @@ class ClipboardInput(Input):
             if sys.platform == "win32":
                 # Windows
                 subprocess.run(
-                    ["powershell", "-command", f"Set-Clipboard -Value '{text}'"],
+                    ["powershell", "-command",
+    f"Set-Clipboard -Value '{text}'"],
                     check=True
                 )
             elif sys.platform == "darwin":
@@ -89,7 +104,8 @@ class ClipboardInput(Input):
         try:
             if event.key == "ctrl+c":
                 # Copy selected text or all text
-                text: str = str(getattr(self, 'value', ''))  # Just use the full value for now
+                text: str = \
+    str(getattr(self, 'value', ''))  # Just use the full value for now
                 if text:
                     # Set system clipboard
                     self._set_system_clipboard(text)
@@ -103,13 +119,18 @@ class ClipboardInput(Input):
             elif event.key == "ctrl+v":
                 # Paste from system clipboard first, then internal
                 system_text = self._get_system_clipboard()
-                internal_text = getattr(self.app, '_clipboard_text', None) or self._clipboard_text
+                internal_text = getattr(self.app, '_clipboard_text', None) or \
+    self._clipboard_text
 
                 # Use system clipboard if available, otherwise internal
                 clipboard_text = system_text or internal_text
 
                 if clipboard_text:
-                    print(f"📋 Pasting from {'system' if system_text else 'internal'} clipboard: '{clipboard_text}'")
+                    print(
+                        f"📋 Pasting from "
+                        f"{'system' if system_text else 'internal'} "
+                        f"clipboard: '{clipboard_text}'"
+                    )
                     self._paste_text(clipboard_text)
                     self.post_message(
                         self.ClipboardMessage("paste", clipboard_text)
@@ -119,7 +140,8 @@ class ClipboardInput(Input):
                     print("📋 No clipboard text to paste")
             elif event.key == "ctrl+x":
                 # Cut selected text or all text
-                cut_text: str = str(getattr(self, 'value', ''))  # Just use the full value for now
+                cut_text: str = \
+    str(getattr(self, 'value', ''))  # Just use the full value for now
                 if cut_text:
                     # Set system clipboard
                     self._set_system_clipboard(cut_text)
@@ -150,7 +172,8 @@ class ClipboardInput(Input):
             current_value = self.value
 
             # Insert text at cursor position
-            new_value = current_value[:cursor_pos] + text + current_value[cursor_pos:]
+            new_value = \
+    current_value[:cursor_pos] + text + current_value[cursor_pos:]
             self.value = new_value
 
             # Move cursor to end of pasted text

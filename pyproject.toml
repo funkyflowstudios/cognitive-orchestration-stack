@@ -89,17 +89,13 @@ pip-audit = "^2.6.0"
 safety = "^3.0.0"
 bandit = "^1.7.5"
 semgrep = "^1.45.0"
+ruff = "^0.13.0"
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.scripts]
-audit = "pip-audit:main"
-test = "pytest"
-lint = "flake8 src tests"
-format = "black src tests"
-type-check = "mypy src"
 cos = "src.tui.app:main"
 
 [tool.black]

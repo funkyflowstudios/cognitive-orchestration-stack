@@ -60,7 +60,8 @@ async def get_metrics_dashboard():
     <head>
         <title>Cognitive Orchestration Stack - Metrics Dashboard</title>
         <style>
-            body {{ font-family: Arial, sans-serif; margin: 20px; background-color: #f5f5f5; }}
+            body {{ font-family: Arial,
+    sans-serif; margin: 20px; background-color: #f5f5f5; }}
             .container {{ max-width: 1200px; margin: 0 auto; }}
             .card {{ background: white; padding: 20px; margin: 10px 0; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }}
             .metric {{ display: flex; justify-content: space-between; margin: 10px 0; }}
@@ -81,15 +82,19 @@ async def get_metrics_dashboard():
                 <h2>📊 System Health</h2>
                 <div class="metric">
                     <span class="metric-label">Uptime:</span>
-                    <span class="metric-value">{system_health.get('uptime_seconds', 0):.1f} seconds</span>
+                    <span class="metric-value">{system_health.get('uptime_seconds',
+    0):.1f} seconds</span>
                 </div>
                 <div class="metric">
                     <span class="metric-label">Total Requests:</span>
-                    <span class="metric-value">{system_health.get('total_requests', 0)}</span>
+                    <span class="metric-value">{system_health.get('total_requests',
+    0)}</span>
                 </div>
                 <div class="metric">
                     <span class="metric-label">Success Rate:</span>
-                    <span class="metric-value {'success' if system_health.get('success_rate', 0) > 0.9 else 'warning' if system_health.get('success_rate', 0) > 0.7 else 'danger'}">
+                    <span class="metric-value {'success' if system_health.get('success_rate',
+    0) > 0.9 else 'warning' if system_health.get('success_rate',
+    0) > 0.7 else 'danger'}">
                         {system_health.get('success_rate', 0):.1%}
                     </span>
                 </div>
@@ -97,7 +102,8 @@ async def get_metrics_dashboard():
 
             <div class="card">
                 <h2>🔢 Counters</h2>
-                {''.join([f'<div class="metric"><span class="metric-label">{k}:</span><span class="metric-value">{v}</span></div>' for k, v in counters.items()]) if counters else '<div class="metric"><span class="metric-label">No counters recorded</span><span class="metric-value">-</span></div>'}
+                {''.join([f'<div class="metric"><span class="metric-label">{k}:</span><span class="metric-value">{v}</span></div>' for k,
+    v in counters.items()]) if counters else '<div class="metric"><span class="metric-label">No counters recorded</span><span class="metric-value">-</span></div>'}
             </div>
 
             <div class="card">
@@ -118,7 +124,8 @@ async def get_metrics_dashboard():
 
             <div class="card">
                 <h2>❌ Error Counts</h2>
-                {''.join([f'<div class="metric"><span class="metric-label">{k}:</span><span class="metric-value danger">{v}</span></div>' for k, v in error_counts.items()]) if error_counts else '<div class="metric"><span class="metric-label">No errors recorded</span><span class="metric-value success">✅</span></div>'}
+                {''.join([f'<div class="metric"><span class="metric-label">{k}:</span><span class="metric-value danger">{v}</span></div>' for k,
+    v in error_counts.items()]) if error_counts else '<div class="metric"><span class="metric-label">No errors recorded</span><span class="metric-value success">✅</span></div>'}
             </div>
 
             <div class="card">

@@ -25,8 +25,10 @@ def create_openapi_schema(app: FastAPI) -> dict:
         description="""
         A comprehensive API for the Cognitive Orchestration Stack, providing:
 
-        - **Health Monitoring**: Liveness and readiness probes for production deployment
-        - **Metrics Collection**: Performance monitoring and system health metrics
+        - **Health Monitoring**: Liveness and \
+    readiness probes for production deployment
+        - **Metrics Collection**: Performance monitoring and \
+    system health metrics
         - **Query Processing**: Async vector and graph search capabilities
         - **Caching**: Intelligent caching for improved performance
 
@@ -100,7 +102,8 @@ async def get_api_docs():
     <head>
         <title>Cognitive Orchestration Stack - API Documentation</title>
         <style>
-            body { font-family: Arial, sans-serif; margin: 20px; background-color: #f5f5f5; }
+            body { font-family: Arial,
+    sans-serif; margin: 20px; background-color: #f5f5f5; }
             .container { max-width: 1200px; margin: 0 auto; }
             .card { background: white; padding: 20px; margin: 10px 0; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
             .endpoint { margin: 15px 0; padding: 10px; background: #f8f9fa; border-left: 4px solid #007bff; }
@@ -122,7 +125,11 @@ async def get_api_docs():
 
             <div class="card">
                 <h2>📋 Overview</h2>
-                <p>The Cognitive Orchestration Stack provides a comprehensive API for building intelligent applications with local LLMs, vector search, and graph databases.</p>
+                <p>The Cognitive Orchestration Stack provides a comprehensive API for building intelligent applications with local LLMs, vector search, and \
+    \
+    \
+    \
+    graph databases.</p>
 
                 <h3>🔧 Key Features</h3>
                 <ul class="feature-list">
@@ -130,9 +137,18 @@ async def get_api_docs():
                     <li><strong>Connection Pooling:</strong> Optimized database connections</li>
                     <li><strong>Intelligent Caching:</strong> Reduces redundant computations</li>
                     <li><strong>Query Optimization:</strong> Automatic performance improvements</li>
-                    <li><strong>Memory Management:</strong> Automatic cleanup and garbage collection</li>
-                    <li><strong>Comprehensive Monitoring:</strong> Real-time metrics and health checks</li>
-                    <li><strong>Production Ready:</strong> Health probes and error handling</li>
+                    <li><strong>Memory Management:</strong> Automatic cleanup and \
+    \
+    \
+    \
+    garbage collection</li>
+                    <li><strong>Comprehensive Monitoring:</strong> Real-time metrics and \
+    \
+    \
+    \
+    health checks</li>
+                    <li><strong>Production Ready:</strong> Health probes and \
+    error handling</li>
                 </ul>
             </div>
 
@@ -148,7 +164,9 @@ async def get_api_docs():
                 <div class="endpoint">
                     <span class="method get">GET</span>
                     <strong>/health/ready</strong>
-                    <p>Readiness probe - checks all external dependencies (Neo4j, ChromaDB, Ollama)</p>
+                    <p>Readiness probe - checks all external dependencies (Neo4j,
+    ChromaDB,
+    Ollama)</p>
                     <p><span class="code">curl http://localhost:8000/health/ready</span></p>
                 </div>
             </div>
@@ -257,7 +275,8 @@ async def get_troubleshooting_guide():
     <head>
         <title>Troubleshooting Guide - Cognitive Orchestration Stack</title>
         <style>
-            body { font-family: Arial, sans-serif; margin: 20px; background-color: #f5f5f5; }
+            body { font-family: Arial,
+    sans-serif; margin: 20px; background-color: #f5f5f5; }
             .container { max-width: 1200px; margin: 0 auto; }
             .card { background: white; padding: 20px; margin: 10px 0; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
             .issue { margin: 20px 0; padding: 15px; background: #fff3cd; border-left: 4px solid #ffc107; }
@@ -275,7 +294,11 @@ async def get_troubleshooting_guide():
 
                 <div class="issue">
                     <h3>❌ Health Check Failing</h3>
-                    <p><strong>Symptoms:</strong> <code>/health/ready</code> returns 503 or times out</p>
+                    <p><strong>Symptoms:</strong> <code>/health/ready</code> returns 503 or \
+    \
+    \
+    \
+    times out</p>
                     <div class="solution">
                         <h4>Solution:</h4>
                         <ol>
@@ -296,7 +319,8 @@ curl http://localhost:11434/api/tags
 
                 <div class="issue">
                     <h3>🐌 Slow Performance</h3>
-                    <p><strong>Symptoms:</strong> High response times, memory usage growing</p>
+                    <p><strong>Symptoms:</strong> High response times,
+    memory usage growing</p>
                     <div class="solution">
                         <h4>Solution:</h4>
                         <ol>
@@ -310,21 +334,24 @@ curl http://localhost:11434/api/tags
 
                 <div class="issue">
                     <h3>💾 Memory Issues</h3>
-                    <p><strong>Symptoms:</strong> High memory usage, out of memory errors</p>
+                    <p><strong>Symptoms:</strong> High memory usage,
+    out of memory errors</p>
                     <div class="solution">
                         <h4>Solution:</h4>
                         <ol>
                             <li>Check memory usage: <code>curl http://localhost:8000/metrics/health</code></li>
                             <li>Clear caches: <code>curl -X POST http://localhost:8000/metrics/reset</code></li>
                             <li>Restart the service if memory usage is too high</li>
-                            <li>Consider reducing batch sizes or query limits</li>
+                            <li>Consider reducing batch sizes or \
+    query limits</li>
                         </ol>
                     </div>
                 </div>
 
                 <div class="issue">
                     <h3>🔌 Connection Issues</h3>
-                    <p><strong>Symptoms:</strong> Database connection errors, timeouts</p>
+                    <p><strong>Symptoms:</strong> Database connection errors,
+    timeouts</p>
                     <div class="solution">
                         <h4>Solution:</h4>
                         <ol>
@@ -344,7 +371,8 @@ curl http://localhost:11434/api/tags
                 <ul>
                     <li><strong>Success Rate:</strong> Should be > 95%</li>
                     <li><strong>Response Time:</strong> P95 should be < 2 seconds</li>
-                    <li><strong>Memory Usage:</strong> Should be stable, not growing continuously</li>
+                    <li><strong>Memory Usage:</strong> Should be stable,
+    not growing continuously</li>
                     <li><strong>Error Counts:</strong> Should be minimal</li>
                 </ul>
 
@@ -368,7 +396,8 @@ watch -n 5 'curl -s http://localhost:8000/metrics/health | jq'</div>
                 <ol>
                     <li>Check the logs in <code>logs/app.log</code></li>
                     <li>Collect metrics: <code>curl http://localhost:8000/metrics/ > metrics.json</code></li>
-                    <li>Check system resources: <code>htop</code> or <code>top</code></li>
+                    <li>Check system resources: <code>htop</code> or \
+    <code>top</code></li>
                     <li>Verify all dependencies are installed: <code>pip list</code></li>
                 </ol>
             </div>

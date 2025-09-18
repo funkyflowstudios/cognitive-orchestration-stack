@@ -15,9 +15,9 @@ def setup_dev_environment():
     project_root = Path(__file__).parent.parent
     template_file = project_root / "config" / "dev.env.template"
     env_file = project_root / "config" / "dev.env"
-    
+
     print("🔧 Setting up development environment...")
-    
+
     # Check if dev.env already exists
     if env_file.exists():
         print(f"⚠️  {env_file} already exists!")
@@ -25,7 +25,7 @@ def setup_dev_environment():
         if response != 'y':
             print("❌ Setup cancelled.")
             return False
-    
+
     # Copy template to dev.env
     try:
         shutil.copy2(template_file, env_file)
@@ -44,7 +44,7 @@ def setup_dev_environment():
         print()
         print("🚀 After setup, run: poetry run cos")
         return True
-        
+
     except Exception as e:
         print(f"❌ Error setting up environment: {e}")
         return False

@@ -65,12 +65,19 @@ class Settings(BaseSettings):
     ollama_embedding_model: str  # This was the missing field
 
     # --- Search API Configuration (Optional) ---
-    # Bing Web Search API (Recommended - much easier than Google Cloud)
-    bing_api_key: Optional[str] = None
+    # SerpAPI (Primary - multiple search engines, language filtering)
+    serpapi_key: Optional[str] = None
+
+    # Brave Search API (Secondary - privacy-focused)
+    brave_api_key: Optional[str] = None
 
     # Google Custom Search API (Alternative - requires Google Cloud setup)
     google_api_key: Optional[str] = None
     google_cse_id: Optional[str] = None
+
+    # DuckDuckGo language settings
+    duckduckgo_language: str = "us-en"
+    duckduckgo_region: str = "us"
 
     # --- Validators ---
 

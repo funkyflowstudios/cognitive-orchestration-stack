@@ -1,0 +1,5 @@
+# Additional requirements for E2E testing
+pytest-docker-compose>=0.7.0
+k6>=0.0.0  # Install separately from https://k6.io
+bandit>=1.7.0
+safety>=2.0.0

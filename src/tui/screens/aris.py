@@ -4,58 +4,48 @@ import asyncio
 from typing import Optional
 
 from textual.app import ComposeResult
-from textual.screen import Screen
-from textual.widgets import Header, Footer, RichLog, Button, Static, Input
+from textual.widgets import RichLog, Button, Static, Input
 from textual.containers import Vertical, Horizontal
 from textual.worker import Worker, get_current_worker
 
 # Import the actual ARIS backend
 from src.aris.orchestration.graph import run_research_job
 from ..widgets.clipboard_input import ClipboardInput
+from .base_screen import BaseScreen
 
 
-class ArisScreen(Screen):
+class ArisScreen(BaseScreen):
     """The screen for running ARIS research tasks."""
-
-    BINDINGS = [
-        ("b", "back", "Back to Menu"),
-        ("ctrl+q", "quit", "Quit"),
-        ("ctrl+c", "copy", "Copy"),
-        ("ctrl+v", "paste", "Paste"),
-        ("ctrl+x", "cut", "Cut"),
-        ("ctrl+a", "select_all", "Select All"),
-    ]
 
     def __init__(self) -> None:
         """Initialize the ARIS screen."""
         super().__init__()
         self._current_worker: Optional[Worker] = None
+        # Disable auto-refresh for ARIS screen
+        self.disable_auto_refresh()
 
-    def compose(self) -> ComposeResult:
-        """Compose the ARIS screen."""
-        yield Header()
-        with Vertical(id="aris-container"):
-            # Topic input section
-            yield Static("Enter research topic:", id="topic-label")
-            yield ClipboardInput(
-                placeholder="Enter your research topic...", id="topic-input"
+    def get_main_content(self) -> ComposeResult:
+        """Compose the ARIS screen content."""
+        # Topic input section
+        yield Static("Enter research topic:", id="topic-label")
+        yield ClipboardInput(
+            placeholder="Enter your research topic...", id="topic-input"
+        )
+
+        # Action buttons
+        with Horizontal():
+            yield Button(
+                "Start Research", id="start-button", variant="primary"
             )
+            yield Button("Clear", id="clear-button")
 
-            # Action buttons
-            with Horizontal():
-                yield Button(
-                    "Start Research", id="start-button", variant="primary"
-                )
-                yield Button("Clear", id="clear-button")
-
-            # Research log
-            yield Static("Research Progress:", id="log-label")
-            yield RichLog(id="aris-log", wrap=True, highlight=True)
-
-        yield Footer()
+        # Research log
+        yield Static("Research Progress:", id="log-label")
+        yield RichLog(id="aris-log", wrap=True, highlight=True, max_lines=50)
 
     def on_mount(self) -> None:
         """Called when the screen is mounted."""
+        super().on_mount()
         # Focus on the topic input
         self.query_one("#topic-input", ClipboardInput).focus()
 
@@ -97,16 +87,18 @@ class ArisScreen(Screen):
         log = self.query_one("#aris-log", RichLog)
         log.clear()
 
-    def _log_message(self, message: str) -> None:
+    def _log_message(self, message: str, level: str = "info") -> None:
         """Log a message to the ARIS log."""
         log = self.query_one("#aris-log", RichLog)
         log.write(message)
+        # Don't duplicate in status log - keep ARIS log for detailed progress
 
     async def run_aris_research(self, topic: str) -> None:
         """
         Run the actual ARIS research process in a background worker.
         """
         try:
+            # Log detailed progress to ARIS log
             self.call_later(
                 self._log_message,
                 f"🔬 Starting ARIS research for: {topic}",
@@ -118,11 +110,12 @@ class ArisScreen(Screen):
                 "📋 Initializing research environment...",
             )
 
-            # Show demonstration mode notice
+            # Log only high-level status to status log
             self.call_later(
-                self._log_message,
-                "ℹ️  Note: Using demonstration mode with curated content",
+                self._log_status, f"ARIS research started for: {topic}", "info"
             )
+
+            # Don't show demo mode message by default - let the actual scraping results determine this
 
             # Check for cancellation before starting heavy work
             if get_current_worker().is_cancelled:
@@ -148,6 +141,10 @@ class ArisScreen(Screen):
                 self.call_later(
                     self._log_message,
                     "✅ Research completed successfully!",
+                )
+                # Log success to status log
+                self.call_later(
+                    self._log_status, f"ARIS research completed successfully", "success"
                 )
                 self.call_later(
                     self._log_message,
@@ -188,32 +185,16 @@ class ArisScreen(Screen):
                     f"❌ Research failed: "
                     f"{results.get('error', 'Unknown error')}",
                 )
+                # Also log to status log
+                self.call_later(
+                    self._log_status, f"ARIS research failed: {results.get('error', 'Unknown error')}", "error"
+                )
 
         except Exception as e:
             self.call_later(
                 self._log_message, f"❌ Research failed: {str(e)}"
             )
-
-    def action_back(self) -> None:
-        """Go back to the main menu."""
-        self.app.pop_screen()
-
-    def action_quit(self) -> None:
-        """Quit the application."""
-        self.app.exit()
-
-    def action_copy(self) -> None:
-        """Copy text from focused input widget."""
-        self.app.action_copy()
-
-    def action_paste(self) -> None:
-        """Paste text to focused input widget."""
-        self.app.action_paste()
-
-    def action_cut(self) -> None:
-        """Cut text from focused input widget."""
-        self.app.action_cut()
-
-    def action_select_all(self) -> None:
-        """Select all text in focused input widget."""
-        self.app.action_select_all()
+            # Also log to status log
+            self.call_later(
+                self._log_status, f"ARIS research failed: {str(e)}", "error"
+            )

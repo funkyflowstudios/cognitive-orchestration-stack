@@ -25,12 +25,15 @@ class ChromaDBAgent:
         # Use singleton client for connection pooling
         if ChromaDBAgent._client is None:
             # Use persistent database instead of in-memory
-            ChromaDBAgent._client = chromadb.PersistentClient(path="./chroma_db")
+            ChromaDBAgent._client = \
+    chromadb.PersistentClient(path="./chroma_db")
             ChromaDBAgent._embedding_function = OllamaEmbedding(
                 model_name=settings.ollama_embedding_model,
                 base_url=settings.ollama_host,
             )
-            logger.info("ChromaDB persistent client initialized with connection pooling")
+            logger.info(
+                "ChromaDB persistent client initialized with connection pooling"
+            )
 
         self._client = ChromaDBAgent._client
         self._embedding_function = ChromaDBAgent._embedding_function
@@ -41,7 +44,8 @@ class ChromaDBAgent:
             # Test embedding dimensions by creating a test embedding
             if self._embedding_function is None:
                 raise RuntimeError("Embedding function not initialized")
-            test_embedding = self._embedding_function.get_text_embedding("test")
+            test_embedding = \
+    self._embedding_function.get_text_embedding("test")
 
             # Try to query with test embedding to check dimensions
             try:
@@ -52,19 +56,24 @@ class ChromaDBAgent:
                 # If successful, use existing collection
                 self._collection = existing_collection
                 logger.info(
-                    "Using existing ChromaDB collection '%s' with correct dimensions",
+                    "Using existing ChromaDB collection '%s' with correct "
+                    "dimensions",
                     collection_name
                 )
             except Exception as e:
                 if "dimension" in str(e).lower():
                     logger.warning(
-                        "Collection '%s' has wrong dimensions, deleting and recreating",
+                        "Collection '%s' has wrong dimensions, deleting and "
+                        "recreating",
                         collection_name
                     )
                     self._client.delete_collection(collection_name)
-                    self._collection = self._client.create_collection(collection_name)
+                    self._collection = self._client.create_collection(
+                        collection_name
+                    )
                     logger.info(
-                        "Created new ChromaDB collection '%s' with correct dimensions",
+                        "Created new ChromaDB collection '%s' with correct "
+                        "dimensions",
                         collection_name
                     )
                 else:
@@ -72,7 +81,8 @@ class ChromaDBAgent:
         except Exception:
             # Collection doesn't exist, create it
             self._collection = self._client.create_collection(collection_name)
-            logger.info("Created new ChromaDB collection '%s'", collection_name)
+            logger.info("Created new ChromaDB collection '%s'",
+    collection_name)
 
     def similarity_search(self, query: str, n_results: int = 5) -> List[str]:
         """Return the content of the most similar documents with LRU

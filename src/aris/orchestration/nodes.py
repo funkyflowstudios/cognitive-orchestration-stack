@@ -157,10 +157,14 @@ class Validator:
         for content_ref in state.scraped_content_references:
             try:
                 content = content_ref.local_path.read_text(encoding="utf-8")
-                prompt = f"""You are a critical fact-checker. Analyze the following text scraped from {content_ref.source_url} for a report on "{state.topic}".  # noqa: E501
-                Assess the text for relevance, objectivity, and quality. Provide a JSON object with two keys:  # noqa: E501
-                1. "validation_score": A float between 0.0 (poor) and 1.0 (excellent).  # noqa: E501
-                2. "validation_notes": A brief, one-sentence justification for the score.  # noqa: E501
+                prompt = \
+    f"""You are a critical fact-checker. Analyze the following text scraped from {content_ref.source_url} for a report on "{state.topic}".  # noqa: E501
+                Assess the text for relevance, objectivity, and \
+    quality. Provide a JSON object with two keys:  # noqa: E501
+                1. "validation_score": A float between 0.0 (poor) and \
+    1.0 (excellent).  # noqa: E501
+                2. "validation_notes": A brief,
+    one-sentence justification for the score.  # noqa: E501
                 Return ONLY the raw JSON object.
                 --- TEXT FOR ANALYSIS (first 4000 chars) ---
                 {content[:4000]}
@@ -228,8 +232,14 @@ class Synthesizer:
         ]
         source_material = "\n\n".join(source_texts)
 
-        prompt = f"""You are an expert writer. Synthesize the provided source material into a comprehensive, well-structured Markdown article on the topic: "{state.topic}".  # noqa: E501
-        Base your article ONLY on the provided information. Structure it with a title, introduction, body, and conclusion.  # noqa: E501
+        prompt = \
+    f"""You are an expert writer. Synthesize the provided source material into a comprehensive,
+    well-structured Markdown article on the topic: "{state.topic}".  # noqa: E501
+        Base your article ONLY on the provided information. Structure it with a title, introduction, body, and \
+    \
+    \
+    \
+    conclusion.  # noqa: E501
         --- VALIDATED SOURCE TEXT (first 15000 chars) ---
         {source_material[:15000]}
         """

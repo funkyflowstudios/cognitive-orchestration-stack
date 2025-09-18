@@ -29,7 +29,8 @@ def main():
     print("=" * 50)
 
     # Check Ollama
-    ollama_host = settings.ollama_host.replace("http://", "").replace("https://", "")
+    ollama_host = \
+    settings.ollama_host.replace("http://", "").replace("https://", "")
     if ":" in ollama_host:
         host, port = ollama_host.split(":")
         port = int(port)
@@ -41,7 +42,8 @@ def main():
     print(f"🤖 Ollama ({host}:{port}): {'✅ Running' if ollama_running else '❌ Not running'}")
 
     # Check Neo4j
-    neo4j_uri = settings.neo4j_uri.replace("bolt://", "").replace("neo4j://", "")
+    neo4j_uri = \
+    settings.neo4j_uri.replace("bolt://", "").replace("neo4j://", "")
     if ":" in neo4j_uri:
         host, port = neo4j_uri.split(":")
         port = int(port)

@@ -6,8 +6,7 @@ from datetime import datetime
 from typing import Dict, Any, Optional
 
 from textual.app import ComposeResult
-from textual.screen import Screen
-from textual.widgets import Header, Footer, DataTable, Static, Button
+from textual.widgets import DataTable, Static, Button
 from textual.containers import Vertical, Horizontal
 from textual.worker import Worker
 
@@ -15,46 +14,36 @@ from textual.worker import Worker
 from src.api.health import liveness_check
 from src.tools.neo4j_agent import Neo4jAgent
 from src.tools.chromadb_agent import ChromaDBAgent
+from .base_screen import BaseScreen
 
 
-class StatusScreen(Screen):
+class StatusScreen(BaseScreen):
     """The screen for system status monitoring."""
-
-    BINDINGS = [
-        ("r", "refresh", "Refresh Status"),
-        ("b", "back", "Back to Menu"),
-        ("ctrl+q", "quit", "Quit"),
-        ("ctrl+c", "copy", "Copy"),
-        ("ctrl+v", "paste", "Paste"),
-        ("ctrl+x", "cut", "Cut"),
-        ("ctrl+a", "select_all", "Select All"),
-    ]
 
     def __init__(self) -> None:
         """Initialize the status screen."""
         super().__init__()
+        # Enable auto-refresh every 10 seconds
+        self.set_auto_refresh_interval(10.0)
+        # Explicitly type the worker for mypy
         self._refresh_worker: Optional[Worker] = None
-        self._last_update: Optional[datetime] = None
 
-    def compose(self) -> ComposeResult:
-        """Compose the status screen."""
-        yield Header()
-        with Vertical(id="status-container"):
-            # Header with refresh button
-            with Horizontal():
-                yield Static("System Status", id="status-title")
-                yield Button("Refresh", id="refresh-button", variant="primary")
+    def get_main_content(self) -> ComposeResult:
+        """Compose the status screen content."""
+        # Header with refresh button
+        with Horizontal():
+            yield Static("System Status", id="status-title")
+            yield Button("Refresh", id="refresh-button", variant="primary")
 
-            # Status table
-            yield DataTable(id="status-table")
+        # Status table
+        yield DataTable(id="status-table")
 
-            # Last update info
-            yield Static("Last updated: Never", id="last-update")
-
-        yield Footer()
+        # Last update info
+        yield Static("Last updated: Never", id="last-update")
 
     def on_mount(self) -> None:
         """Called when the screen is mounted."""
+        super().on_mount()
         # Set up the data table
         table = self.query_one("#status-table", DataTable)
         table.add_columns("Component", "Status", "Details", "Last Check")
@@ -73,6 +62,9 @@ class StatusScreen(Screen):
         if self._refresh_worker and not self._refresh_worker.is_finished:
             self._refresh_worker.cancel()
 
+        # Log refresh action
+        self._log_message("Refreshing system status...", "info")
+
         # Start refresh worker
         self._refresh_worker = self.run_worker(
             self.run_health_checks(), exclusive=True
@@ -80,11 +72,14 @@ class StatusScreen(Screen):
 
     def _update_last_update_time(self) -> None:
         """Update the last update time display."""
-        self._last_update = datetime.now()
+        super()._update_last_update_time()
         last_update_text = self.query_one("#last-update", Static)
-        last_update_text.update(
-            f"Last updated: {self._last_update.strftime('%H:%M:%S')}"
-        )
+        if self._last_update is not None:
+            last_update_text.update(
+                f"Last updated: {self._last_update.strftime('%H:%M:%S')}"
+            )
+        else:
+            last_update_text.update("Last updated: Never")
 
     def _update_status_table(
         self, status_data: Dict[str, Dict[str, Any]]
@@ -127,7 +122,8 @@ class StatusScreen(Screen):
                 # Use liveness check for basic API status
                 api_health = await liveness_check()
                 api_status = (
-                    "Healthy" if api_health.get("status") == "alive" else "Error"
+                    "Healthy" if api_health.get("status") == "alive"
+                    else "Error"
                 )
                 service_name = api_health.get('service', 'Unknown')
                 status_data["API Server"] = {
@@ -167,7 +163,8 @@ class StatusScreen(Screen):
                 status_data["ChromaDB"] = {
                     "status": "Healthy",
                     "details": (
-                        f"Vector store operational ({collection_count} collections)"
+                        f"Vector store operational ({collection_count} "
+                        f"collections)"
                     ),
                     "last_check": current_time,
                 }
@@ -222,27 +219,3 @@ class StatusScreen(Screen):
             return "Error"
         else:
             return "Healthy"
-
-    def action_back(self) -> None:
-        """Go back to the main menu."""
-        self.app.pop_screen()
-
-    def action_quit(self) -> None:
-        """Quit the application."""
-        self.app.exit()
-
-    def action_copy(self) -> None:
-        """Copy text from focused input widget."""
-        self.app.action_copy()
-
-    def action_paste(self) -> None:
-        """Paste text to focused input widget."""
-        self.app.action_paste()
-
-    def action_cut(self) -> None:
-        """Cut text from focused input widget."""
-        self.app.action_cut()
-
-    def action_select_all(self) -> None:
-        """Select all text in focused input widget."""
-        self.app.action_select_all()

@@ -4,8 +4,7 @@ import asyncio
 from typing import Optional
 
 from textual.app import ComposeResult
-from textual.screen import Screen
-from textual.widgets import Header, Footer, RichLog, Input
+from textual.widgets import RichLog, Input
 from textual.containers import Vertical
 from textual.worker import Worker
 
@@ -13,38 +12,30 @@ from textual.worker import Worker
 from src.orchestration.graph import GRAPH
 from ..widgets.clipboard_input import ClipboardInput
 from src.orchestration.state import AgentState
+from .base_screen import BaseScreen
 
 
-class QueryScreen(Screen):
+class QueryScreen(BaseScreen):
     """The screen for interacting with the AI agent."""
-
-    BINDINGS = [
-        ("b", "back", "Back to Menu"),
-        ("ctrl+q", "quit", "Quit"),
-        ("ctrl+c", "copy", "Copy"),
-        ("ctrl+v", "paste", "Paste"),
-        ("ctrl+x", "cut", "Cut"),
-        ("ctrl+a", "select_all", "Select All"),
-    ]
 
     def __init__(self) -> None:
         """Initialize the query screen."""
         super().__init__()
         self._current_worker: Optional[Worker] = None
+        # Disable auto-refresh for query screen
+        self.disable_auto_refresh()
 
-    def compose(self) -> ComposeResult:
-        """Compose the query screen."""
-        yield Header()
-        with Vertical(id="query-container"):
-            # Use RichLog for styled, scrollable conversation history
-            yield RichLog(id="conversation-log", wrap=True, highlight=True)
-            yield ClipboardInput(
-                placeholder="Type your query here...", id="query-input"
-            )
-        yield Footer()
+    def get_main_content(self) -> ComposeResult:
+        """Compose the query screen content."""
+        # Use RichLog for styled, scrollable conversation history
+        yield RichLog(id="conversation-log", wrap=True, highlight=True, max_lines=100)
+        yield ClipboardInput(
+            placeholder="Type your query here...", id="query-input"
+        )
 
     def on_mount(self) -> None:
         """Called when the screen is mounted."""
+        super().on_mount()
         # Focus on the input field
         self.query_one("#query-input", ClipboardInput).focus()
 
@@ -71,9 +62,12 @@ class QueryScreen(Screen):
         if self._current_worker and not self._current_worker.is_finished:
             self._current_worker.cancel()
 
-        # Start new worker
+        # Start new worker - create a callable that captures the query
+        async def worker_func():
+            await self.run_backend_query(query_text)
+
         self._current_worker = self.run_worker(
-            self.run_backend_query(query_text), exclusive=True
+            worker_func, exclusive=True
         )
 
     async def run_backend_query(self, query: str) -> None:
@@ -110,8 +104,10 @@ class QueryScreen(Screen):
             # Create the agent state with UI callback
             state = AgentState(query=query, ui=ui_callback)
 
-            # Run the orchestration graph
-            final_state = GRAPH.invoke(state)
+            # Run the orchestration graph in a thread executor to prevent blocking
+            final_state = await asyncio.get_event_loop().run_in_executor(
+                None, GRAPH.invoke, state
+            )
 
             # Get the final response
             response = final_state.get("response", "No response generated")
@@ -122,12 +118,6 @@ class QueryScreen(Screen):
                 f"🤖 Agent: {response}",
             )
 
-        except asyncio.CancelledError:
-            # Handle cancellation gracefully
-            self.call_later(
-                self._update_conversation_log,
-                "⚠️ Query cancelled",
-            )
         except Exception as e:
             self.call_later(
                 self._update_conversation_log,
@@ -138,27 +128,3 @@ class QueryScreen(Screen):
         """Update the conversation log with a message."""
         log = self.query_one("#conversation-log", RichLog)
         log.write(message)
-
-    def action_back(self) -> None:
-        """Go back to the main menu."""
-        self.app.pop_screen()
-
-    def action_quit(self) -> None:
-        """Quit the application."""
-        self.app.exit()
-
-    def action_copy(self) -> None:
-        """Copy text from focused input widget."""
-        self.app.action_copy()
-
-    def action_paste(self) -> None:
-        """Paste text to focused input widget."""
-        self.app.action_paste()
-
-    def action_cut(self) -> None:
-        """Cut text from focused input widget."""
-        self.app.action_cut()
-
-    def action_select_all(self) -> None:
-        """Select all text in focused input widget."""
-        self.app.action_select_all()

@@ -11,7 +11,7 @@ from src.api.docs import router as docs_router
 from src.api.health import router as health_router
 from src.api.metrics import router as metrics_router
 from src.utils.logger import get_logger
-from src.utils.metrics import error_count, request_count, success_count
+from src.utils.metrics import error_count, request_count, success_count, initialize_metrics
 
 logger = get_logger(__name__)
 
@@ -70,6 +70,7 @@ app.openapi = lambda: create_openapi_schema(app)
 async def startup_event() -> None:
     """Initialize services on startup."""
     logger.info("FastAPI server starting up")
+    initialize_metrics()
 
 
 @app.on_event("shutdown")

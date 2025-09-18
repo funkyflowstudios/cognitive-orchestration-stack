@@ -131,6 +131,10 @@ def get_console_handler():
 
 def get_file_handler():
     """Returns a handler that writes log messages to a timed rotating file."""
+    # Skip file logging during tests to avoid permission issues
+    if os.getenv("TESTING") == "true":
+        return logging.NullHandler()
+
     # Rotates the log file every day, keeping 7 days of backups
     file_handler = TimedRotatingFileHandler(
         LOG_FILE, when="midnight", backupCount=7

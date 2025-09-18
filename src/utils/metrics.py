@@ -87,6 +87,7 @@ def success_count() -> None:
 def request_count() -> None:
     """Increment total request count."""
     with _metrics_lock:
+        _metrics["counters"]["requests"] += 1
         _metrics["system_health"]["total_requests"] += 1
 
 

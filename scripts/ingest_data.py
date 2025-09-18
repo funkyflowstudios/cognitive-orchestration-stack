@@ -200,7 +200,8 @@ def ingest(source_dir: Path) -> None:  # noqa: D401
         # Skip empty documents
         if not doc.text or len(doc.text.strip()) == 0:
             logger.warning(
-                f"Skipping empty document {i}: {doc.metadata.get('filename', 'unknown')}"
+                f"Skipping empty document {i}: "
+                f"{doc.metadata.get('filename', 'unknown')}"
             )
             continue
 
@@ -216,7 +217,8 @@ def ingest(source_dir: Path) -> None:  # noqa: D401
                 ids=[f"doc_{i}"]
             )
             logger.debug(
-                f"Added document {i} to ChromaDB: {doc.metadata.get('filename', 'unknown')}"
+                f"Added document {i} to ChromaDB: "
+                f"{doc.metadata.get('filename', 'unknown')}"
             )
         except Exception as e:
             logger.error(f"Failed to process document {i}: {e}")
