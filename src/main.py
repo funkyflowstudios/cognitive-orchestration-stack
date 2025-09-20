@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-"""Chimera CLI entry point – class-based application."""
-
 import argparse
 
 from prompt_toolkit import PromptSession
@@ -15,6 +13,8 @@ from src.orchestration.state import AgentState
 from src.ui.animations import disintegration_frames, run_animation
 from src.ui.focus import FocusController
 from src.utils.logger import get_logger
+
+"""Chimera CLI entry point – class-based application."""
 
 logger = get_logger(__name__)
 

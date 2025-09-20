@@ -1,7 +1,6 @@
 """Ingest screen for data ingestion operations."""
 
 import asyncio
-import sys
 from pathlib import Path
 from typing import Optional
 

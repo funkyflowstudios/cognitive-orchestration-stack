@@ -1,13 +1,13 @@
 from __future__ import annotations
 
+from rich.spinner import SPINNERS, Spinner
+from rich.theme import Theme
+
 """UI theme and custom spinners for Chimera CLI.
 
 This module defines the *Nocturne* colour palette and the custom
 *Newton's Cradle* spinner described in the Chimera Design Prospectus.
 """
-
-from rich.spinner import SPINNERS, Spinner
-from rich.theme import Theme
 
 # ---------------------------------------------------------------------------
 # Colour palette – the *Nocturne* scheme

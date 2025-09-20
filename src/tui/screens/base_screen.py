@@ -1,7 +1,7 @@
 """Base screen class with common functionality for all TUI screens."""
 
 import asyncio
-from typing import Optional, Any, Dict
+from typing import Optional
 from datetime import datetime
 
 from textual.app import ComposeResult

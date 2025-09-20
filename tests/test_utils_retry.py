@@ -1,7 +1,6 @@
 """Tests for the retry utility module."""
 
 import time
-from unittest.mock import patch, MagicMock
 
 import pytest
 

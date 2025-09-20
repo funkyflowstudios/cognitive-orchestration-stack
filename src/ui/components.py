@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-"""Reusable Rich components for Chimera CLI."""
-
 from rich.console import Console, Group, RenderableType
 from rich.live import Live
 from rich.panel import Panel
@@ -9,6 +7,8 @@ from rich.spinner import Spinner
 from rich.text import Text
 
 from .theme import NEWTONS_CRADLE, NOCTURNE_THEME
+
+"""Reusable Rich components for Chimera CLI."""
 
 __all__ = ["render_panel"]
 

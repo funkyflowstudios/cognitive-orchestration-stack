@@ -11,7 +11,7 @@ import asyncio
 import os
 import sys
 from types import ModuleType
-from typing import Any, Callable, Dict, List
+from typing import Any, Dict, List
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
@@ -843,7 +843,6 @@ def mock_settings():
 def mock_chromadb_agent():
     """Provide a mock ChromaDB agent for testing."""
     from unittest.mock import MagicMock, AsyncMock
-    import asyncio
 
     agent = MagicMock()
     agent.similarity_search.return_value = ["Mock document 1", "Mock document 2"]
@@ -858,7 +857,6 @@ def mock_chromadb_agent():
 def mock_neo4j_agent():
     """Provide a mock Neo4j agent for testing."""
     from unittest.mock import MagicMock, AsyncMock
-    import asyncio
 
     agent = MagicMock()
     agent.query.return_value = [{"name": "Test Node", "label": "PERSON"}]
@@ -1012,7 +1010,6 @@ def mock_ollama_client():
 def sample_agent_state_with_plan():
     """Provide a sample agent state with a plan for testing."""
     from src.orchestration.state import AgentState
-    from unittest.mock import MagicMock
 
     def mock_ui_callback(msg: str) -> None:
         pass
@@ -1028,7 +1025,6 @@ def sample_agent_state_with_plan():
 def sample_agent_state_with_outputs():
     """Provide a sample agent state with tool outputs for testing."""
     from src.orchestration.state import AgentState
-    from unittest.mock import MagicMock
 
     def mock_ui_callback(msg: str) -> None:
         pass

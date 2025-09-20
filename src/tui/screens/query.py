@@ -5,7 +5,6 @@ from typing import Optional
 
 from textual.app import ComposeResult
 from textual.widgets import RichLog, Input
-from textual.containers import Vertical
 from textual.worker import Worker
 
 # Import the actual backend orchestration

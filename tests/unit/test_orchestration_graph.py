@@ -6,7 +6,7 @@ Tests the LangGraph workflow execution, state transitions, and \
 """
 
 import pytest
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 from src.orchestration.graph import GRAPH, _edge_selector
 from src.orchestration.state import AgentState
 
@@ -63,7 +63,7 @@ class TestOrchestrationGraph:
         with patch("src.orchestration.graph.logger") as mock_logger:
             # Test with high iteration count
             state = AgentState(query="test", iteration=3)
-            result = _edge_selector(state)
+            _edge_selector(state)
 
             # Should log warning about max iterations
             mock_logger.warning.assert_called_once()

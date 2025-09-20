@@ -1,11 +1,9 @@
 """End-to-End test configuration and fixtures."""
 
 import asyncio
-import os
-import subprocess
 import time
 from pathlib import Path
-from typing import AsyncGenerator, Generator
+from typing import Generator
 
 import pytest
 import requests

@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-"""Frame-by-frame console animation utilities."""
-
 import math
 import random
 import shutil
@@ -12,6 +10,8 @@ from time import sleep
 from typing import List
 
 from rich.console import Console
+
+"""Frame-by-frame console animation utilities."""
 
 # Force terminal clears even when Rich is unsure (e.g., in some Windows shells)
 console = Console(force_terminal=True)

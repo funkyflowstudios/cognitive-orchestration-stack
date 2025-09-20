@@ -7,7 +7,7 @@ from typing import Dict, Any, Optional
 
 from textual.app import ComposeResult
 from textual.widgets import DataTable, Static, Button
-from textual.containers import Vertical, Horizontal
+from textual.containers import Horizontal
 from textual.worker import Worker
 
 # Import the actual backend health check functions

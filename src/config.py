@@ -1,5 +1,12 @@
 from __future__ import annotations
 
+import logging
+import os
+from functools import lru_cache
+from pathlib import Path
+from typing import Any, Dict, Optional
+
+from dotenv import load_dotenv
 from pydantic_settings import SettingsConfigDict  # NEW
 
 """Global configuration management for the Cognitive Orchestration Stack.
@@ -9,12 +16,6 @@ validation and type-safety. Supports HashiCorp Vault for production secrets
 management.
 """
 
-import logging
-import os
-from functools import lru_cache
-from pathlib import Path
-from typing import Any, Dict, Optional
-
 try:
     from pydantic_settings import BaseSettings  # Preferred (Pydantic v2)
 except ImportError:  # Ultimate fallback – minimal stub for v1 users
@@ -23,9 +24,6 @@ except ImportError:  # Ultimate fallback – minimal stub for v1 users
         """Stub BaseSettings for environments lacking pydantic-settings."""
 
         pass
-
-
-from dotenv import load_dotenv
 
 # Optional Vault integration
 try:

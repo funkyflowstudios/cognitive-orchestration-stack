@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-"""Focus Pane system for Zenith UI."""
-
 # Standard library
 import time
 
@@ -16,6 +14,8 @@ from rich.spinner import Spinner
 from rich.text import Text
 
 from .theme import ZENITH_THEME
+
+"""Focus Pane system for Zenith UI."""
 
 console = Console(theme=ZENITH_THEME)
 

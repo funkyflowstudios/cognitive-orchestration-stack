@@ -1,8 +1,6 @@
 """Tests for the schema validator module."""
 
-import json
 import pytest
-from unittest.mock import patch
 
 from src.utils.schema_validator import (
     SafeJSONParser,

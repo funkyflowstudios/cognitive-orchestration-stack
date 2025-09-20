@@ -5,7 +5,7 @@ from typing import Optional
 
 from textual.app import ComposeResult
 from textual.widgets import RichLog, Button, Static, Input
-from textual.containers import Vertical, Horizontal
+from textual.containers import Horizontal
 from textual.worker import Worker, get_current_worker
 
 # Import the actual ARIS backend
@@ -144,7 +144,7 @@ class ArisScreen(BaseScreen):
                 )
                 # Log success to status log
                 self.call_later(
-                    self._log_status, f"ARIS research completed successfully", "success"
+                    self._log_status, "ARIS research completed successfully", "success"
                 )
                 self.call_later(
                     self._log_message,
