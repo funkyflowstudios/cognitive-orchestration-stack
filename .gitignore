@@ -5,26 +5,20 @@ __pycache__/
 *.pyd
 *.so
 
-# Test files
-/tests/
-./tests/
-tests/
-
 # Virtual environments
 venv/
 .venv/
 .env/
 .conda/
-*.env
-.env
-dev.env
-*dev.env
+env/
+ENV/
+env.bak/
+venv.bak/
 
-# IDEs and editors
-.vscode/
-.idea/
-*.sublime-workspace
-*.sublime-project
+# Environment files (contain secrets - never commit!)
+*.env
+config/*.env
+!config/*.env.template
 
 # Data, models, databases
 /data/
@@ -35,13 +29,8 @@ dev.env
 
 # Logs
 /logs/
-
-# Jupyter Notebooks
-.ipynb_checkpoints/
-
-# OS Files
-.DS_Store
-Thumbs.db
+*.log
+*.log.*
 
 # Coverage reports
 htmlcov/
@@ -75,30 +64,10 @@ wheels/
 *.spec
 
 # Unit test / coverage reports
-htmlcov/
 .tox/
 .nox/
-.coverage
-.coverage.*
-.cache
+.cache/
 nosetests.xml
-coverage.xml
-*.cover
-.hypothesis/
-.pytest_cache/
-
-# Environments
-.env
-.venv
-env/
-venv/
-ENV/
-env.bak/
-venv.bak/
-
-# Environment files (contain secrets - never commit!)
-config/*.env
-!config/*.env.template
 
 # mypy
 .mypy_cache/
@@ -108,35 +77,17 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
-# Other files
-.cursor/
-
-# Security and test results
-security-results.json
-test_results.txt
-*.log
-*.log.*
-
-# Temporary files
-*.tmp
-*.temp
-
-# Generated files and caches
-*.cache
-.cache/
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
-
-# IDE and editor files
+# IDEs and editors
 .vscode/
 .idea/
+.cursor/
+*.sublime-workspace
+*.sublime-project
 *.swp
 *.swo
 *~
 
-# OS generated files
+# OS Files
 .DS_Store
 .DS_Store?
 ._*
@@ -145,11 +96,34 @@ __pycache__/
 ehthumbs.db
 Thumbs.db
 
+# Security and test results
+security-results.json
+test_results.txt
+
+# Temporary files
+*.tmp
+*.temp
+
+# Generated files and caches
+*.cache
+.cache/
+
 # Application specific
 *.db
 *.sqlite
 *.sqlite3
-*.log
 
-# Debug and test logs
-tests/debug_tests/*.log
+# Debug and test artifacts (but keep actual test files)
+tests/debug_tests/
+tests/*.log
+debug_*.py
+test_debug.*
+
+# Jupyter Notebooks
+.ipynb_checkpoints/
+
+# Node.js (if any)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*

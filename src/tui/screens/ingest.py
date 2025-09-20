@@ -213,9 +213,8 @@ class IngestScreen(BaseScreen):
         """Update the file list display."""
         file_list = self.query_one("#file-list", OptionList)
 
-        # Clear existing options by removing all options
-        while file_list.options:
-            file_list.remove_option_at(0)
+        # Clear existing options
+        file_list.clear_options()
 
         # Add files to the list (limit to first 50 for performance)
         for file_path in files[:50]:

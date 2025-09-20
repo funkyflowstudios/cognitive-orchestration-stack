@@ -117,17 +117,18 @@ python test_tui_integration.py
 
 ### Code Style
 
-The project follows PEP 8 with line length of 79 characters:
+The project follows PEP 8 with line length of 88 characters:
 
 ```bash
 # Format code
-poetry run format
+poetry run black src tests
+poetry run isort src tests
 
 # Check linting
-poetry run lint
+poetry run ruff check src tests
 
 # Type checking
-poetry run type-check
+poetry run mypy src
 ```
 
 ## Troubleshooting

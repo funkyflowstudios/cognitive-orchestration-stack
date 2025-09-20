@@ -62,11 +62,16 @@ def configure_structured_logging(
         )
         return
 
+    # Reset any existing logging configuration
+    for handler in logging.root.handlers[:]:
+        logging.root.removeHandler(handler)
+
     # Configure standard logging
     logging.basicConfig(
         level=getattr(logging, log_level.upper()),
         format="%(message)s",
         stream=sys.stdout,
+        force=True,  # Force reconfiguration
     )
 
     # Configure structlog processors
@@ -84,7 +89,7 @@ def configure_structured_logging(
     if use_json or os.getenv("APP_ENV") == "prod":
         processors.append(structlog.processors.JSONRenderer())
     else:
-        processors.append(structlog.dev.ConsoleRenderer(colors=True))
+        processors.append(structlog.dev.ConsoleRenderer(colors=False))  # Disable colors for tests
 
     # Configure structlog
     structlog.configure(
@@ -145,6 +150,20 @@ def get_file_handler():
 
 # Global flag to track if structured logging has been configured
 _structured_logging_configured = False
+
+
+def reset_logging_configuration():
+    """Reset the logging configuration for testing."""
+    global _structured_logging_configured
+    _structured_logging_configured = False
+
+    # Reset structlog configuration
+    if STRUCTLOG_AVAILABLE:
+        structlog.reset_defaults()
+
+    # Clear all handlers
+    for handler in logging.root.handlers[:]:
+        logging.root.removeHandler(handler)
 
 
 def get_logger(logger_name: str) -> Any:

@@ -7,9 +7,9 @@ A modular, multi-layer stack for large-language-model cognitive workflows, built
 ```mermaid
 graph TB
     subgraph "Client Layer"
+        TUI[TUI Interface]
         CLI[CLI Interface]
         API[REST API]
-        WEB[Web Dashboard]
     end
 
     subgraph "API Layer"
@@ -42,15 +42,21 @@ graph TB
         SPACY[spaCy NLP]
     end
 
+    subgraph "Research System"
+        ARIS[ARIS Research]
+        SCRAPER[Web Scraper Agent]
+        SEARCH[Search Agent]
+    end
+
     subgraph "Configuration & Security"
         CONFIG[Environment Config]
         VAULT[HashiCorp Vault]
         LOGS[Structured Logging]
     end
 
+    TUI --> FASTAPI
     CLI --> FASTAPI
     API --> FASTAPI
-    WEB --> FASTAPI
 
     FASTAPI --> LANGGRAPH
     HEALTH --> FASTAPI
@@ -70,6 +76,11 @@ graph TB
     LLAMAINDEX --> SPACY
     PARSERS --> CHROMADB
     PARSERS --> NEO4J
+
+    ARIS --> SCRAPER
+    ARIS --> SEARCH
+    SCRAPER --> CHROMADB
+    SEARCH --> NEO4J
 
     CONFIG --> VAULT
     CONFIG --> LOGS
@@ -201,6 +212,16 @@ Place source documents into the `data/` folder then run:
 poetry run python -m scripts.ingest_data --source_dir data
 ```
 
+### Launch the TUI Interface
+
+```bash
+# Launch the Terminal User Interface (recommended)
+poetry run cos
+
+# Or launch directly
+poetry run python -m src.tui.app
+```
+
 ### Ask the Agent via CLI
 
 ```bash
@@ -209,6 +230,17 @@ poetry run python -m src.main
 
 # Single question mode
 poetry run python -m src.main --question "What is the capital of France?"
+```
+
+### ARIS Research System
+
+```bash
+# Run automated research tasks
+poetry run python -m src.scripts.run_aris_job --topic "AI agent ecosystems"
+
+# Or use the TUI interface for interactive research
+poetry run cos
+# Then select "ARIS Research" from the main menu
 ```
 
 ### Health Monitoring & API
@@ -312,7 +344,7 @@ poetry run pytest
 # Run linting
 poetry run black src tests
 poetry run isort src tests
-poetry run flake8 src tests
+poetry run ruff check src tests
 
 # Run type checking
 poetry run mypy src
@@ -325,6 +357,9 @@ poetry update
 
 # Show dependency tree
 poetry show --tree
+
+# Launch TUI
+poetry run cos
 ```
 
 ### Environment Management
