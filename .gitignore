@@ -21,6 +21,9 @@ venv.bak/
 config/*.env
 !config/*.env.template
 
+# Ignore environment-specific configuration files
+/config/dev.env
+
 # Data, models, databases
 /data/
 /models/
