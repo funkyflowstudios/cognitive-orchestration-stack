@@ -16,6 +16,7 @@ env.bak/
 venv.bak/
 
 # Environment files (contain secrets - never commit!)
+# CRITICAL: Never delete config/dev.env - it contains API keys!
 *.env
 config/*.env
 !config/*.env.template
