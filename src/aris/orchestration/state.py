@@ -35,9 +35,7 @@ class ResearchState(BaseModel):
     search_queries: List[str] = Field(default_factory=list)
 
     # Tool Executor Output
-    scraped_content_references: List[ScrapedContent] = Field(
-        default_factory=list
-    )
+    scraped_content_references: List[ScrapedContent] = Field(default_factory=list)
 
     # Synthesizer Output
     synthesized_article_markdown: Optional[str] = None

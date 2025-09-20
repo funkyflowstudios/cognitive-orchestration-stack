@@ -60,6 +60,7 @@ class TestRetryDecorator:
 
     def test_retry_preserves_function_metadata(self):
         """Test that retry decorator preserves function metadata."""
+
         @retry
         def test_function():
             """Test function docstring."""
@@ -88,6 +89,7 @@ class TestRetryDecorator:
 
     def test_retry_with_return_value_preservation(self):
         """Test that retry preserves return value type and content."""
+
         @retry
         def function_returning_dict():
             return {"key": "value", "number": 42}
@@ -252,6 +254,7 @@ class TestRetryDecorator:
                 if call_count < 2:
                     raise ValueError("Lambda failure")
                 return "lambda_success"
+
             return lambda_function
 
         retry_func = create_retry_function()

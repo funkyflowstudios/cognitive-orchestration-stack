@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-
 from src.orchestration.state import AgentState
 
 
@@ -21,6 +20,7 @@ class TestAgentState:
 
     def test_agent_state_creation_with_all_fields(self):
         """Test AgentState creation with all fields."""
+
         def mock_ui(msg: str) -> None:
             pass
 
@@ -30,7 +30,7 @@ class TestAgentState:
             tool_output=["AI is..."],
             response="AI is artificial intelligence",
             iteration=1,
-            ui=mock_ui
+            ui=mock_ui,
         )
         assert state.query == "What is AI?"
         assert state.plan == ["vector_search"]

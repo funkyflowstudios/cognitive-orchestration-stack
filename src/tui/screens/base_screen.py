@@ -1,18 +1,18 @@
 """Base screen class with common functionality for all TUI screens."""
 
 import asyncio
-from typing import Optional
 from datetime import datetime
+from typing import Optional
 
 from textual.app import ComposeResult
+from textual.containers import ScrollableContainer, Vertical
 from textual.screen import Screen
-from textual.widgets import Header, Footer, RichLog, Static
-from textual.containers import Vertical, ScrollableContainer
+from textual.widgets import Footer, Header, RichLog, Static
 from textual.worker import Worker
 
 
 class BaseScreen(Screen):
-    """Base screen class with common functionality for scrolling and real-time updates."""
+    """Base screen class with common functionality for scrolling and updates."""
 
     BINDINGS = [
         ("b", "back", "Back to Menu"),
@@ -87,7 +87,17 @@ class BaseScreen(Screen):
     def _log_message(self, message: str, level: str = "info") -> None:
         """Log a message to the status log."""
         timestamp = datetime.now().strftime("%H:%M:%S")
-        log = self.query_one("#status-log", RichLog)
+
+        # Try to find a status log, but don't fail if it doesn't exist
+        try:
+            log = self.query_one("#status-log", RichLog)
+        except Exception:
+            # If no status log exists, try to find any RichLog widget
+            try:
+                log = self.query_one(RichLog)
+            except Exception:
+                # If no RichLog exists, just return without logging
+                return
 
         if level == "error":
             log.write(f"[{timestamp}] ❌ {message}")

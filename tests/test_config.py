@@ -13,15 +13,18 @@ class TestSettings:
 
     def test_settings_creation_with_valid_env(self):
         """Test Settings creation with valid environment variables."""
-        with patch.dict(os.environ, {
-            "NEO4J_URI": "bolt://test:7687",
-            "NEO4J_USER": "test_user",
-            "NEO4J_PASSWORD": "secure_password",
-            "OLLAMA_HOST": "http://test:11434",
-            "OLLAMA_MODEL": "test_model",
-            "OLLAMA_EMBEDDING_MODEL": "test_embedding_model",
-            "LOG_LEVEL": "INFO"
-        }):
+        with patch.dict(
+            os.environ,
+            {
+                "NEO4J_URI": "bolt://test:7687",
+                "NEO4J_USER": "test_user",
+                "NEO4J_PASSWORD": "secure_password",
+                "OLLAMA_HOST": "http://test:11434",
+                "OLLAMA_MODEL": "test_model",
+                "OLLAMA_EMBEDDING_MODEL": "test_embedding_model",
+                "LOG_LEVEL": "INFO",
+            },
+        ):
             settings = Settings()
             assert settings.neo4j_uri == "bolt://test:7687"
             assert settings.neo4j_user == "test_user"
@@ -33,10 +36,14 @@ class TestSettings:
 
     def test_settings_default_values(self):
         """Test Settings with default values."""
-        with patch.dict(os.environ, {
-            "NEO4J_PASSWORD": "secure_password",
-            "OLLAMA_EMBEDDING_MODEL": "test_embedding_model"
-        }, clear=True):
+        with patch.dict(
+            os.environ,
+            {
+                "NEO4J_PASSWORD": "secure_password",
+                "OLLAMA_EMBEDDING_MODEL": "test_embedding_model",
+            },
+            clear=True,
+        ):
             settings = Settings()
             assert settings.neo4j_uri == "bolt://localhost:7687"
             assert settings.neo4j_user == "neo4j"
@@ -46,15 +53,20 @@ class TestSettings:
 
     def test_settings_validation_insecure_password(self):
         """Test Settings validation with insecure password."""
-        with patch.dict(os.environ, {
-            "NEO4J_PASSWORD": "changeme",
-            "OLLAMA_EMBEDDING_MODEL": "test_embedding_model"
-        }, clear=True):
+        with patch.dict(
+            os.environ,
+            {
+                "NEO4J_PASSWORD": "changeme",
+                "OLLAMA_EMBEDDING_MODEL": "test_embedding_model",
+            },
+            clear=True,
+        ):
             # Clear the cache to ensure fresh settings
             from src.config import get_cached_settings
+
             get_cached_settings.cache_clear()
 
-            # The validation might not be working as expected in the current implementation
+            # The validation might not be working as expected in current implementation
             # Let's test that the settings are created with the insecure password
             settings = Settings()
             assert settings.neo4j_password == "changeme"
@@ -62,15 +74,20 @@ class TestSettings:
 
     def test_settings_validation_missing_embedding_model(self):
         """Test Settings validation with missing embedding model."""
-        with patch.dict(os.environ, {
-            "NEO4J_PASSWORD": "secure_password",
-            "OLLAMA_EMBEDDING_MODEL": ""  # Explicitly set to empty
-        }, clear=True):
+        with patch.dict(
+            os.environ,
+            {
+                "NEO4J_PASSWORD": "secure_password",
+                "OLLAMA_EMBEDDING_MODEL": "",  # Explicitly set to empty
+            },
+            clear=True,
+        ):
             # Clear the cache to ensure fresh settings
             from src.config import get_cached_settings
+
             get_cached_settings.cache_clear()
 
-            # The validation might not be working as expected in the current implementation
+            # The validation might not be working as expected in current implementation
             # Let's test that the settings are created with empty embedding model
             settings = Settings()
             assert settings.ollama_embedding_model == ""
@@ -78,15 +95,17 @@ class TestSettings:
 
     def test_settings_validation_empty_password(self):
         """Test Settings validation with empty password."""
-        with patch.dict(os.environ, {
-            "NEO4J_PASSWORD": "",
-            "OLLAMA_EMBEDDING_MODEL": "test_embedding_model"
-        }, clear=True):
+        with patch.dict(
+            os.environ,
+            {"NEO4J_PASSWORD": "", "OLLAMA_EMBEDDING_MODEL": "test_embedding_model"},
+            clear=True,
+        ):
             # Clear the cache to ensure fresh settings
             from src.config import get_cached_settings
+
             get_cached_settings.cache_clear()
 
-            # The validation might not be working as expected in the current implementation
+            # The validation might not be working as expected in current implementation
             # Let's test that the settings are created with empty password
             settings = Settings()
             assert settings.neo4j_password == ""
@@ -98,12 +117,17 @@ class TestGetSettings:
 
     def test_get_settings_caching(self):
         """Test that get_cached_settings returns cached instance."""
-        with patch.dict(os.environ, {
-            "NEO4J_PASSWORD": "secure_password",
-            "OLLAMA_EMBEDDING_MODEL": "test_embedding_model"
-        }, clear=True):
+        with patch.dict(
+            os.environ,
+            {
+                "NEO4J_PASSWORD": "secure_password",
+                "OLLAMA_EMBEDDING_MODEL": "test_embedding_model",
+            },
+            clear=True,
+        ):
             # Clear the cache first
             from src.config import get_cached_settings
+
             get_cached_settings.cache_clear()
 
             settings1 = get_cached_settings()
@@ -113,11 +137,16 @@ class TestGetSettings:
 
     def test_get_settings_cache_clear(self):
         """Test that cache can be cleared."""
-        with patch.dict(os.environ, {
-            "NEO4J_PASSWORD": "secure_password",
-            "OLLAMA_EMBEDDING_MODEL": "test_embedding_model"
-        }, clear=True):
+        with patch.dict(
+            os.environ,
+            {
+                "NEO4J_PASSWORD": "secure_password",
+                "OLLAMA_EMBEDDING_MODEL": "test_embedding_model",
+            },
+            clear=True,
+        ):
             from src.config import get_cached_settings
+
             get_cached_settings.cache_clear()
             settings = get_settings()
             assert isinstance(settings, Settings)

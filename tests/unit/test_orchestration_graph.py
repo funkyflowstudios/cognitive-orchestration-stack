@@ -5,8 +5,10 @@ Tests the LangGraph workflow execution, state transitions, and \
     conditional routing.
 """
 
-import pytest
 from unittest.mock import patch
+
+import pytest
+
 from src.orchestration.graph import GRAPH, _edge_selector
 from src.orchestration.state import AgentState
 
@@ -18,11 +20,7 @@ class TestOrchestrationGraph:
     def initial_state(self):
         """Create a fresh AgentState for testing."""
         return AgentState(
-            query="Test query",
-            plan=[],
-            tool_output=[],
-            response="",
-            iteration=0
+            query="Test query", plan=[], tool_output=[], response="", iteration=0
         )
 
     def test_edge_selector_returns_synth_for_low_iteration(self):

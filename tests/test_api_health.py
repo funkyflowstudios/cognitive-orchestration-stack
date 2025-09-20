@@ -15,6 +15,7 @@ class TestHealthEndpoints:
     def test_liveness_endpoint(self):
         """Test liveness endpoint."""
         from fastapi import FastAPI
+
         app = FastAPI()
         app.include_router(router)
 
@@ -29,9 +30,9 @@ class TestHealthEndpoints:
     def test_readiness_endpoint_success(self):
         """Test readiness endpoint with successful health checks."""
         with (
-            patch('src.api.health._get_neo4j_agent') as mock_get_neo4j,
-            patch('src.api.health._get_chromadb_agent') as mock_get_chromadb,
-            patch('httpx.AsyncClient') as mock_httpx_client
+            patch("src.api.health._get_neo4j_agent") as mock_get_neo4j,
+            patch("src.api.health._get_chromadb_agent") as mock_get_chromadb,
+            patch("httpx.AsyncClient") as mock_httpx_client,
         ):
 
             # Mock successful health checks
@@ -45,11 +46,11 @@ class TestHealthEndpoints:
 
             # Mock successful Ollama check
             mock_response = MagicMock(status_code=200)
-            mock_client = \
-    mock_httpx_client.return_value.__aenter__.return_value
+            mock_client = mock_httpx_client.return_value.__aenter__.return_value
             mock_client.get.return_value = mock_response
 
             from fastapi import FastAPI
+
             app = FastAPI()
             app.include_router(router)
 
@@ -66,9 +67,9 @@ class TestHealthEndpoints:
     def test_readiness_endpoint_neo4j_failure(self):
         """Test readiness endpoint with Neo4j failure."""
         with (
-            patch('src.api.health._get_neo4j_agent') as mock_get_neo4j,
-            patch('src.api.health._get_chromadb_agent') as mock_get_chromadb,
-            patch('httpx.AsyncClient') as mock_httpx_client
+            patch("src.api.health._get_neo4j_agent") as mock_get_neo4j,
+            patch("src.api.health._get_chromadb_agent") as mock_get_chromadb,
+            patch("httpx.AsyncClient") as mock_httpx_client,
         ):
 
             # Mock Neo4j failure by targeting the correct method
@@ -82,11 +83,11 @@ class TestHealthEndpoints:
 
             # Mock successful Ollama check
             mock_response = MagicMock(status_code=200)
-            mock_client = \
-    mock_httpx_client.return_value.__aenter__.return_value
+            mock_client = mock_httpx_client.return_value.__aenter__.return_value
             mock_client.get.return_value = mock_response
 
             from fastapi import FastAPI
+
             app = FastAPI()
             app.include_router(router)
 
@@ -97,15 +98,17 @@ class TestHealthEndpoints:
             data = response.json()
             assert data["detail"]["status"] == "not_ready"
             assert data["detail"]["checks"]["neo4j"]["status"] == "unhealthy"
-            assert data["detail"]["checks"]["neo4j"]["error"] == "Neo4j connection failed"
+            assert (
+                data["detail"]["checks"]["neo4j"]["error"] == "Neo4j connection failed"
+            )
             assert data["detail"]["checks"]["chromadb"]["status"] == "healthy"
 
     def test_readiness_endpoint_chromadb_failure(self):
         """Test readiness endpoint with ChromaDB failure."""
         with (
-            patch('src.api.health._get_neo4j_agent') as mock_get_neo4j,
-            patch('src.api.health._get_chromadb_agent') as mock_get_chromadb,
-            patch('httpx.AsyncClient') as mock_httpx_client
+            patch("src.api.health._get_neo4j_agent") as mock_get_neo4j,
+            patch("src.api.health._get_chromadb_agent") as mock_get_chromadb,
+            patch("httpx.AsyncClient") as mock_httpx_client,
         ):
 
             # Mock successful Neo4j
@@ -122,11 +125,11 @@ class TestHealthEndpoints:
 
             # Mock successful Ollama check
             mock_response = MagicMock(status_code=200)
-            mock_client = \
-    mock_httpx_client.return_value.__aenter__.return_value
+            mock_client = mock_httpx_client.return_value.__aenter__.return_value
             mock_client.get.return_value = mock_response
 
             from fastapi import FastAPI
+
             app = FastAPI()
             app.include_router(router)
 
@@ -138,14 +141,17 @@ class TestHealthEndpoints:
             assert data["detail"]["status"] == "not_ready"
             assert data["detail"]["checks"]["neo4j"]["status"] == "healthy"
             assert data["detail"]["checks"]["chromadb"]["status"] == "unhealthy"
-            assert data["detail"]["checks"]["chromadb"]["error"] == "ChromaDB connection failed"
+            assert (
+                data["detail"]["checks"]["chromadb"]["error"]
+                == "ChromaDB connection failed"
+            )
 
     def test_readiness_endpoint_both_failures(self):
         """Test readiness endpoint with both services failing."""
         with (
-            patch('src.api.health._get_neo4j_agent') as mock_get_neo4j,
-            patch('src.api.health._get_chromadb_agent') as mock_get_chromadb,
-            patch('httpx.AsyncClient') as mock_httpx_client
+            patch("src.api.health._get_neo4j_agent") as mock_get_neo4j,
+            patch("src.api.health._get_chromadb_agent") as mock_get_chromadb,
+            patch("httpx.AsyncClient") as mock_httpx_client,
         ):
 
             # Mock both failures by targeting the correct methods
@@ -161,11 +167,11 @@ class TestHealthEndpoints:
 
             # Mock successful Ollama check
             mock_response = MagicMock(status_code=200)
-            mock_client = \
-    mock_httpx_client.return_value.__aenter__.return_value
+            mock_client = mock_httpx_client.return_value.__aenter__.return_value
             mock_client.get.return_value = mock_response
 
             from fastapi import FastAPI
+
             app = FastAPI()
             app.include_router(router)
 
@@ -186,9 +192,10 @@ class TestHealthAgentGetters:
         """Test lazy initialization of Neo4j agent."""
         # Clear the global variable
         import src.api.health
+
         src.api.health._neo4j_agent = None
 
-        with patch('src.api.health.Neo4jAgent') as mock_neo4j_class:
+        with patch("src.api.health.Neo4jAgent") as mock_neo4j_class:
             mock_agent = MagicMock()
             mock_neo4j_class.return_value = mock_agent
 
@@ -207,9 +214,10 @@ class TestHealthAgentGetters:
         """Test lazy initialization of ChromaDB agent."""
         # Clear the global variable
         import src.api.health
+
         src.api.health._chromadb_agent = None
 
-        with patch('src.api.health.ChromaDBAgent') as mock_chromadb_class:
+        with patch("src.api.health.ChromaDBAgent") as mock_chromadb_class:
             mock_agent = MagicMock()
             mock_chromadb_class.return_value = mock_agent
 
@@ -236,6 +244,7 @@ class TestHealthEndpointIntegration:
     def test_health_endpoints_exist(self):
         """Test that all health endpoints exist."""
         from fastapi import FastAPI
+
         app = FastAPI()
         app.include_router(router)
 

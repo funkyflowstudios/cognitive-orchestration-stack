@@ -13,19 +13,17 @@ test_log_file = Path("logs/test_debug.log")
 test_log_file.parent.mkdir(exist_ok=True)
 
 # File handler for test logs
-file_handler = logging.FileHandler(test_log_file, mode='w')
+file_handler = logging.FileHandler(test_log_file, mode="w")
 file_handler.setLevel(logging.DEBUG)
 file_formatter = logging.Formatter(
-    '%(asctime)s - %(name)s - %(levelname)s - %(funcName)s:%(lineno)d - %(message)s'
+    "%(asctime)s - %(name)s - %(levelname)s - %(funcName)s:%(lineno)d - %(message)s"
 )
 file_handler.setFormatter(file_formatter)
 
 # Console handler for immediate feedback
 console_handler = logging.StreamHandler(sys.stdout)
 console_handler.setLevel(logging.INFO)
-console_formatter = logging.Formatter(
-    '%(asctime)s - %(levelname)s - %(message)s'
-)
+console_formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
 console_handler.setFormatter(console_formatter)
 
 # Add handlers

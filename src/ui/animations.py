@@ -56,7 +56,7 @@ def run_animation(
                     sleep(frame_duration)
                 if not repeat:
                     break
-    except KeyboardInterrupt:  # noqa: WPS329
+    except KeyboardInterrupt:  # noqa: BLE001
         pass
 
 
@@ -67,12 +67,13 @@ class _Particle:  # noqa: D401
         self.x: float = x
         self.y: float = y
         # Random initial outward velocity
-        angle: float = random.uniform(0.0, 2.0 * math.pi)
-        speed: float = random.uniform(0.5, 1.5)
+        # Note: Using random for animation purposes only, not for security/crypto
+        angle: float = random.uniform(0.0, 2.0 * math.pi)  # noqa: B311
+        speed: float = random.uniform(0.5, 1.5)  # noqa: B311
         self.vx: float = math.cos(angle) * speed
         self.vy: float = math.sin(angle) * speed
         self.char: str = char
-        self.life: int = random.randint(20, 40)
+        self.life: int = random.randint(20, 40)  # noqa: B311
 
     # ------------------------------------------------------------------
     # Update helpers
@@ -136,19 +137,17 @@ def play_cognitive_bloom_animation() -> None:  # noqa: D401
             try:
                 ch: str = next(char_iter)
             except StopIteration:
-                ch = random.choice(seed_chars)
+                ch = random.choice(seed_chars)  # noqa: B311
             particles.append(_Particle(cx, cy, ch))
 
         # Update particles
-        for p in list(particles):  # noqa: WPS422 (list copy intentional)
+        for p in list(particles):  # noqa: C416 (list copy intentional)
             p.update(cx, cy)
             if not p.is_alive:
                 particles.remove(p)
 
         # Prepare blank grid
-        grid: list[list[str]] = [
-            [" " for _ in range(cols)] for _ in range(rows)
-        ]
+        grid: list[list[str]] = [[" " for _ in range(cols)] for _ in range(rows)]
         for p in particles:
             x_i = int(round(p.x))
             y_i = int(round(p.y))
@@ -189,8 +188,9 @@ def play_graceful_exit_animation() -> None:  # noqa: D401
         rows_chars: list[str] = []
         for _ in range(rows):
             line = "".join(
-                random.choice(grey_chars[: int(density * 4) or 1])
-                for _ in range(cols)
+                random.choice(
+                    grey_chars[: int(density * 4) or 1]
+                )  # noqa: B311 for _ in range(cols)
             )
             rows_chars.append(line)
         frame_strings.append("\n".join(rows_chars))
@@ -199,9 +199,7 @@ def play_graceful_exit_animation() -> None:  # noqa: D401
     left, right = 0, cols - 1
     top, bottom = 0, rows - 1
     while left < right and top < bottom:
-        grid_matrix: list[list[str]] = [
-            [" " for _ in range(cols)] for _ in range(rows)
-        ]
+        grid_matrix: list[list[str]] = [[" " for _ in range(cols)] for _ in range(rows)]
         for x in range(left, right + 1):
             if 0 <= top < rows:
                 grid_matrix[top][x] = "░"

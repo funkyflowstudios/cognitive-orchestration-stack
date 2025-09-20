@@ -25,6 +25,7 @@ except ImportError:  # Ultimate fallback – minimal stub for v1 users
 
         pass
 
+
 # Optional Vault integration
 try:
     import hvac
@@ -162,17 +163,13 @@ def load_environment_config(env: str = "dev") -> None:
     Args:
         env: Environment name (dev, prod, etc.)
     """
-    config_file = (
-        Path(__file__).resolve().parent.parent / "config" / f"{env}.env"
-    )
+    config_file = Path(__file__).resolve().parent.parent / "config" / f"{env}.env"
 
     if config_file.exists():
         load_dotenv(dotenv_path=config_file, override=True)
         logging.info(f"Loaded environment configuration from {config_file}")
     else:
-        logging.warning(
-            f"Environment configuration file not found: {config_file}"
-        )
+        logging.warning(f"Environment configuration file not found: {config_file}")
 
 
 def get_settings() -> Settings:  # noqa: D401
@@ -206,27 +203,19 @@ def get_settings() -> Settings:  # noqa: D401
             # Create a new Settings instance with Vault secrets
             # This overrides environment variables with Vault values
             vault_env_vars = {
-                "NEO4J_URI": vault_secrets.get(
-                    "neo4j_uri", settings.neo4j_uri
-                ),
-                "NEO4J_USER": vault_secrets.get(
-                    "neo4j_user", settings.neo4j_user
-                ),
+                "NEO4J_URI": vault_secrets.get("neo4j_uri", settings.neo4j_uri),
+                "NEO4J_USER": vault_secrets.get("neo4j_user", settings.neo4j_user),
                 "NEO4J_PASSWORD": vault_secrets.get(
                     "neo4j_password", settings.neo4j_password
                 ),
-                "OLLAMA_HOST": vault_secrets.get(
-                    "ollama_host", settings.ollama_host
-                ),
+                "OLLAMA_HOST": vault_secrets.get("ollama_host", settings.ollama_host),
                 "OLLAMA_MODEL": vault_secrets.get(
                     "ollama_model", settings.ollama_model
                 ),
                 "OLLAMA_EMBEDDING_MODEL": vault_secrets.get(
                     "ollama_embedding_model", settings.ollama_embedding_model
                 ),
-                "LOG_LEVEL": vault_secrets.get(
-                    "log_level", settings.log_level
-                ),
+                "LOG_LEVEL": vault_secrets.get("log_level", settings.log_level),
             }
 
             # Update environment variables temporarily

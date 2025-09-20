@@ -1,6 +1,7 @@
 """End-to-End tests for the complete Cognitive Orchestration Stack system."""
 
 import time
+
 from fastapi.testclient import TestClient
 
 from src.orchestration.graph import GRAPH
@@ -10,8 +11,7 @@ from src.orchestration.state import AgentState
 class TestFullSystemE2E:
     """End-to-End tests for the complete system."""
 
-    def test_health_checks_e2e(self, e2e_client: TestClient,
-    wait_for_services):
+    def test_health_checks_e2e(self, e2e_client: TestClient, wait_for_services):
         """Test that all health checks pass in E2E environment."""
         # Test liveness check
         response = e2e_client.get("/health/live")
@@ -33,8 +33,7 @@ class TestFullSystemE2E:
         assert checks["chromadb"]["status"] == "healthy"
         # Ollama might be unavailable, which is acceptable
 
-    def test_metrics_collection_e2e(self, e2e_client: TestClient,
-    wait_for_services):
+    def test_metrics_collection_e2e(self, e2e_client: TestClient, wait_for_services):
         """Test that metrics are properly collected in E2E environment."""
         # Make some requests to generate metrics
         e2e_client.get("/health/live")
@@ -54,16 +53,11 @@ class TestFullSystemE2E:
         # Verify request count increased
         assert data["counters"]["requests"] >= 2
 
-    def test_orchestration_workflow_e2e(self, sample_query: str,
-    wait_for_services):
+    def test_orchestration_workflow_e2e(self, sample_query: str, wait_for_services):
         """Test the complete orchestration workflow with real services."""
         # Create initial state
         initial_state = AgentState(
-            query=sample_query,
-            plan=[],
-            tool_output=[],
-            response="",
-            iteration=0
+            query=sample_query, plan=[], tool_output=[], response="", iteration=0
         )
 
         # Execute the orchestration graph
@@ -81,23 +75,21 @@ class TestFullSystemE2E:
 
         # Verify a response was generated
         assert len(result["response"]) > 0
-        assert "Ableton Live" in result["response"] or \
-    "music production" in result["response"].lower()
+        assert (
+            "Ableton Live" in result["response"]
+            or "music production" in result["response"].lower()
+        )
 
-    def test_document_ingestion_e2e(self, e2e_client: TestClient,
-    sample_documents,
-    wait_for_services):
+    def test_document_ingestion_e2e(
+        self, e2e_client: TestClient, sample_documents, wait_for_services
+    ):
         """Test document ingestion and retrieval in E2E environment."""
         # This would test the actual document ingestion process
         # For now, we'll test that the system can handle document-related queries
 
         query = "What are the key features mentioned in the test documents?"
         initial_state = AgentState(
-            query=query,
-            plan=[],
-            tool_output=[],
-            response="",
-            iteration=0
+            query=query, plan=[], tool_output=[], response="", iteration=0
         )
 
         # Execute the orchestration graph
@@ -108,8 +100,7 @@ class TestFullSystemE2E:
         assert "response" in result
         assert len(result["response"]) > 0
 
-    def test_error_handling_e2e(self, e2e_client: TestClient,
-    wait_for_services):
+    def test_error_handling_e2e(self, e2e_client: TestClient, wait_for_services):
         """Test error handling in E2E environment."""
         # Test invalid endpoint
         response = e2e_client.get("/invalid/endpoint")
@@ -125,11 +116,10 @@ class TestFullSystemE2E:
         metrics = metrics_response.json()
         assert "error_counts" in metrics
 
-    def test_concurrent_requests_e2e(self, e2e_client: TestClient,
-    wait_for_services):
+    def test_concurrent_requests_e2e(self, e2e_client: TestClient, wait_for_services):
         """Test system behavior under concurrent requests."""
-        import threading
         import queue
+        import threading
 
         results: queue.Queue[int] = queue.Queue()
 
@@ -153,8 +143,7 @@ class TestFullSystemE2E:
             status_code = results.get()
             assert status_code == 200
 
-    def test_system_performance_e2e(self, e2e_client: TestClient,
-    wait_for_services):
+    def test_system_performance_e2e(self, e2e_client: TestClient, wait_for_services):
         """Test system performance characteristics."""
         # Test response time
         start_time = time.time()
@@ -174,17 +163,12 @@ class TestFullSystemE2E:
         response_time = end_time - start_time
         assert response_time < 2.0  # Dashboard should load within 2 seconds
 
-    def test_data_persistence_e2e(self, e2e_client: TestClient,
-    wait_for_services):
+    def test_data_persistence_e2e(self, e2e_client: TestClient, wait_for_services):
         """Test that data persists across requests."""
         # Make a request that should store data
         query = "Test query for data persistence"
         initial_state = AgentState(
-            query=query,
-            plan=[],
-            tool_output=[],
-            response="",
-            iteration=0
+            query=query, plan=[], tool_output=[], response="", iteration=0
         )
 
         # Execute the orchestration graph
@@ -200,16 +184,11 @@ class TestFullSystemE2E:
         assert len(result1["response"]) > 0
         assert len(result2["response"]) > 0
 
-    def test_system_resilience_e2e(self, e2e_client: TestClient,
-    wait_for_services):
+    def test_system_resilience_e2e(self, e2e_client: TestClient, wait_for_services):
         """Test system resilience to various failure scenarios."""
         # Test with malformed query
         malformed_state = AgentState(
-            query="",  # Empty query
-            plan=[],
-            tool_output=[],
-            response="",
-            iteration=0
+            query="", plan=[], tool_output=[], response="", iteration=0  # Empty query
         )
 
         result = GRAPH.invoke(malformed_state)
@@ -219,19 +198,14 @@ class TestFullSystemE2E:
         # Test with very long query
         long_query = "What is Ableton Live? " * 100  # Very long query
         long_state = AgentState(
-            query=long_query,
-            plan=[],
-            tool_output=[],
-            response="",
-            iteration=0
+            query=long_query, plan=[], tool_output=[], response="", iteration=0
         )
 
         result = GRAPH.invoke(long_state)
         assert isinstance(result, dict)
         # System should handle long query gracefully
 
-    def test_api_documentation_e2e(self, e2e_client: TestClient,
-    wait_for_services):
+    def test_api_documentation_e2e(self, e2e_client: TestClient, wait_for_services):
         """Test that API documentation is accessible."""
         # Test OpenAPI JSON
         response = e2e_client.get("/openapi.json")
@@ -251,13 +225,11 @@ class TestFullSystemE2E:
         assert response.status_code == 200
         assert "text/html" in response.headers["content-type"]
 
-    def test_cors_functionality_e2e(self, e2e_client: TestClient,
-    wait_for_services):
+    def test_cors_functionality_e2e(self, e2e_client: TestClient, wait_for_services):
         """Test CORS functionality in E2E environment."""
         # Test with Origin header
         response = e2e_client.get(
-            "/health/live",
-            headers={"Origin": "http://localhost:3000"}
+            "/health/live", headers={"Origin": "http://localhost:3000"}
         )
         assert response.status_code == 200
         assert "access-control-allow-origin" in response.headers
@@ -265,8 +237,7 @@ class TestFullSystemE2E:
 
         # Test with different origin
         response = e2e_client.get(
-            "/health/live",
-            headers={"Origin": "https://example.com"}
+            "/health/live", headers={"Origin": "https://example.com"}
         )
         assert response.status_code == 200
         assert "access-control-allow-origin" in response.headers

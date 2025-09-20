@@ -84,9 +84,7 @@ async def readiness_check() -> Dict[str, Any]:
         import httpx
 
         async with httpx.AsyncClient() as client:
-            response = await client.get(
-                f"{settings.ollama_host}/api/tags", timeout=5.0
-            )
+            response = await client.get(f"{settings.ollama_host}/api/tags", timeout=5.0)
             if response.status_code == 200:
                 checks["ollama"]["status"] = "healthy"
             else:

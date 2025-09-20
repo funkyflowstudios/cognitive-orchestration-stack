@@ -22,10 +22,9 @@ class TestPlannerNode:
     """Test the planner node functionality."""
 
     @pytest.mark.asyncio
-    async def test_planner_node_success(self, mock_ollama_client,
-    sample_agent_state):
+    async def test_planner_node_success(self, mock_ollama_client, sample_agent_state):
         """Test successful planner node execution."""
-        with patch('src.orchestration.nodes._get_ollama_client') as mock_get_client:
+        with patch("src.orchestration.nodes._get_ollama_client") as mock_get_client:
             mock_get_client.return_value = mock_ollama_client
             mock_ollama_client.generate.return_value = {
                 "response": '{"plan": ["vector_search", "graph_search"]}'
@@ -55,11 +54,11 @@ class TestPlannerNode:
         self, mock_ollama_client, sample_agent_state
     ):
         """Test planner node with invalid JSON that gets retried."""
-        with patch('src.orchestration.nodes._get_ollama_client') as mock_get_client:
+        with patch("src.orchestration.nodes._get_ollama_client") as mock_get_client:
             mock_get_client.return_value = mock_ollama_client
             mock_ollama_client.generate.side_effect = [
                 {"response": "Invalid JSON response"},
-                {"response": '{"plan": ["vector_search"]}'}
+                {"response": '{"plan": ["vector_search"]}'},
             ]
 
             result = planner_node(sample_agent_state)
@@ -72,7 +71,7 @@ class TestPlannerNode:
         self, mock_ollama_client, sample_agent_state
     ):
         """Test planner node fallback after max retries."""
-        with patch('src.orchestration.nodes._get_ollama_client') as mock_get_client:
+        with patch("src.orchestration.nodes._get_ollama_client") as mock_get_client:
             mock_get_client.return_value = mock_ollama_client
             mock_ollama_client.generate.return_value = {
                 "response": "Always invalid JSON"
@@ -101,7 +100,7 @@ class TestPlannerNode:
         self, mock_ollama_client, sample_agent_state
     ):
         """Test planner node UI callback."""
-        with patch('src.orchestration.nodes._get_ollama_client') as mock_get_client:
+        with patch("src.orchestration.nodes._get_ollama_client") as mock_get_client:
             mock_get_client.return_value = mock_ollama_client
             mock_ollama_client.generate.return_value = {
                 "response": '{"plan": ["vector_search"]}'
@@ -123,15 +122,16 @@ class TestToolExecutorNodeAsync:
     """Test the async tool executor node functionality."""
 
     @pytest.mark.asyncio
-    async def test_tool_executor_sync_tools(self,
-    sample_agent_state_with_plan):
+    async def test_tool_executor_sync_tools(self, sample_agent_state_with_plan):
         """Test tool executor with synchronous tools."""
-        with patch.dict(TOOL_MAP, {
-            "vector_search": MagicMock(return_value="Vector search result"),
-            "graph_search": MagicMock(return_value="Graph search result")
-        }):
-            result = \
-    await tool_executor_node_async(sample_agent_state_with_plan)
+        with patch.dict(
+            TOOL_MAP,
+            {
+                "vector_search": MagicMock(return_value="Vector search result"),
+                "graph_search": MagicMock(return_value="Graph search result"),
+            },
+        ):
+            result = await tool_executor_node_async(sample_agent_state_with_plan)
 
             assert "tool_output" in result
             assert len(result["tool_output"]) == 2
@@ -139,20 +139,22 @@ class TestToolExecutorNodeAsync:
             assert "Graph search result" in result["tool_output"]
 
     @pytest.mark.asyncio
-    async def test_tool_executor_async_tools(self,
-    sample_agent_state_with_plan):
+    async def test_tool_executor_async_tools(self, sample_agent_state_with_plan):
         """Test tool executor with asynchronous tools."""
         # Modify plan to use async tools
         sample_agent_state_with_plan.plan = [
-            "vector_search_async", "graph_search_async"
+            "vector_search_async",
+            "graph_search_async",
         ]
 
-        with patch.dict(TOOL_MAP, {
-            "vector_search_async": AsyncMock(return_value="Async vector result"),
-            "graph_search_async": AsyncMock(return_value="Async graph result")
-        }):
-            result = \
-    await tool_executor_node_async(sample_agent_state_with_plan)
+        with patch.dict(
+            TOOL_MAP,
+            {
+                "vector_search_async": AsyncMock(return_value="Async vector result"),
+                "graph_search_async": AsyncMock(return_value="Async graph result"),
+            },
+        ):
+            result = await tool_executor_node_async(sample_agent_state_with_plan)
 
             assert "tool_output" in result
             assert len(result["tool_output"]) == 2
@@ -160,18 +162,18 @@ class TestToolExecutorNodeAsync:
             assert "Async graph result" in result["tool_output"]
 
     @pytest.mark.asyncio
-    async def test_tool_executor_mixed_tools(self,
-    sample_agent_state_with_plan):
+    async def test_tool_executor_mixed_tools(self, sample_agent_state_with_plan):
         """Test tool executor with mixed sync and async tools."""
-        sample_agent_state_with_plan.plan = \
-    ["vector_search", "graph_search_async"]
+        sample_agent_state_with_plan.plan = ["vector_search", "graph_search_async"]
 
-        with patch.dict(TOOL_MAP, {
-            "vector_search": MagicMock(return_value="Sync vector result"),
-            "graph_search_async": AsyncMock(return_value="Async graph result")
-        }):
-            result = \
-    await tool_executor_node_async(sample_agent_state_with_plan)
+        with patch.dict(
+            TOOL_MAP,
+            {
+                "vector_search": MagicMock(return_value="Sync vector result"),
+                "graph_search_async": AsyncMock(return_value="Async graph result"),
+            },
+        ):
+            result = await tool_executor_node_async(sample_agent_state_with_plan)
 
             assert "tool_output" in result
             assert len(result["tool_output"]) == 2
@@ -179,8 +181,7 @@ class TestToolExecutorNodeAsync:
             assert "Async graph result" in result["tool_output"]
 
     @pytest.mark.asyncio
-    async def test_tool_executor_ui_callbacks(self,
-    sample_agent_state_with_plan):
+    async def test_tool_executor_ui_callbacks(self, sample_agent_state_with_plan):
         """Test tool executor UI callbacks."""
         ui_calls = []
 
@@ -189,10 +190,13 @@ class TestToolExecutorNodeAsync:
 
         sample_agent_state_with_plan.ui = ui_callback
 
-        with patch.dict(TOOL_MAP, {
-            "vector_search": MagicMock(return_value="Vector result"),
-            "graph_search": MagicMock(return_value="Graph result")
-        }):
+        with patch.dict(
+            TOOL_MAP,
+            {
+                "vector_search": MagicMock(return_value="Vector result"),
+                "graph_search": MagicMock(return_value="Graph result"),
+            },
+        ):
             await tool_executor_node_async(sample_agent_state_with_plan)
 
             # Check that UI callbacks were made
@@ -220,7 +224,7 @@ class TestSynthesizerNode:
         self, mock_ollama_client, sample_agent_state_with_outputs
     ):
         """Test successful synthesizer node execution."""
-        with patch('src.orchestration.nodes._get_ollama_client') as mock_get_client:
+        with patch("src.orchestration.nodes._get_ollama_client") as mock_get_client:
             mock_get_client.return_value = mock_ollama_client
             mock_ollama_client.generate.return_value = {
                 "response": (
@@ -245,9 +249,7 @@ class TestSynthesizerNode:
             ui_calls.append(msg)
 
         sample_agent_state_with_outputs.ui = ui_callback
-        mock_ollama_client.generate.return_value = {
-            "response": "Test response"
-        }
+        mock_ollama_client.generate.return_value = {"response": "Test response"}
 
         synthesizer_node(sample_agent_state_with_outputs)
 
@@ -259,11 +261,9 @@ class TestSynthesizerNode:
         self, mock_ollama_client, sample_agent_state_with_outputs
     ):
         """Test synthesizer node context handling."""
-        with patch('src.orchestration.nodes._get_ollama_client') as mock_get_client:
+        with patch("src.orchestration.nodes._get_ollama_client") as mock_get_client:
             mock_get_client.return_value = mock_ollama_client
-            mock_ollama_client.generate.return_value = {
-                "response": "Test response"
-            }
+            mock_ollama_client.generate.return_value = {"response": "Test response"}
 
             synthesizer_node(sample_agent_state_with_outputs)
 
@@ -283,8 +283,8 @@ class TestToolFunctions:
     def test_vector_search(self, mock_chromadb_agent, sample_agent_state):
         """Test vector search tool."""
         with patch(
-            'src.orchestration.nodes._get_chromadb_agent',
-            return_value=mock_chromadb_agent
+            "src.orchestration.nodes._get_chromadb_agent",
+            return_value=mock_chromadb_agent,
         ):
             result = vector_search(sample_agent_state)
 
@@ -294,12 +294,11 @@ class TestToolFunctions:
             )
 
     @pytest.mark.asyncio
-    async def test_vector_search_async(self, mock_chromadb_agent,
-    sample_agent_state):
+    async def test_vector_search_async(self, mock_chromadb_agent, sample_agent_state):
         """Test async vector search tool."""
         with patch(
-            'src.orchestration.nodes._get_chromadb_agent',
-            return_value=mock_chromadb_agent
+            "src.orchestration.nodes._get_chromadb_agent",
+            return_value=mock_chromadb_agent,
         ):
             result = await vector_search_async(sample_agent_state)
 
@@ -311,8 +310,7 @@ class TestToolFunctions:
     def test_graph_search(self, mock_neo4j_agent, sample_agent_state):
         """Test graph search tool."""
         with patch(
-            'src.orchestration.nodes._get_neo4j_agent',
-            return_value=mock_neo4j_agent
+            "src.orchestration.nodes._get_neo4j_agent", return_value=mock_neo4j_agent
         ):
             result = graph_search(sample_agent_state)
 
@@ -320,12 +318,10 @@ class TestToolFunctions:
             mock_neo4j_agent.query.assert_called_once()
 
     @pytest.mark.asyncio
-    async def test_graph_search_async(self, mock_neo4j_agent,
-    sample_agent_state):
+    async def test_graph_search_async(self, mock_neo4j_agent, sample_agent_state):
         """Test async graph search tool."""
         with patch(
-            'src.orchestration.nodes._get_neo4j_agent',
-            return_value=mock_neo4j_agent
+            "src.orchestration.nodes._get_neo4j_agent", return_value=mock_neo4j_agent
         ):
             result = await graph_search_async(sample_agent_state)
 
@@ -339,7 +335,10 @@ class TestToolMap:
     def test_tool_map_contains_all_tools(self):
         """Test that TOOL_MAP contains all expected tools."""
         expected_tools = [
-            "vector_search", "graph_search", "vector_search_async", "graph_search_async"
+            "vector_search",
+            "graph_search",
+            "vector_search_async",
+            "graph_search_async",
         ]
 
         for tool in expected_tools:

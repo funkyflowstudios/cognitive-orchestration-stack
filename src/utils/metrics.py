@@ -46,9 +46,9 @@ def timing(timer_name: str, duration_ms: float) -> None:
         _metrics["timers"][timer_name].append(duration_ms)
         # Keep only last 1000 measurements to prevent memory bloat
         if len(_metrics["timers"][timer_name]) > 1000:
-            _metrics["timers"][timer_name] = _metrics["timers"][timer_name][
-                -1000:
-            ]
+            _metrics["timers"][timer_name] = _metrics["timers"][timer_name][-1000:]
+        # Also add to performance trends
+        _metrics["performance_trends"][timer_name].append(duration_ms)
         logger.debug("Timer %s recorded: %.2fms", timer_name, duration_ms)
 
 
@@ -103,6 +103,7 @@ def get_metrics() -> dict[str, Any]:
         "gauges": metrics["gauges"],
         "histograms": {},
         "error_counts": dict(metrics["error_counts"]),
+        "performance_trends": {k: list(v) for k, v in metrics["performance_trends"].items()},
         "system_health": metrics["system_health"].copy(),
         "performance_summary": {},
     }
@@ -133,9 +134,7 @@ def get_metrics() -> dict[str, Any]:
     # Calculate system health metrics
     total_requests = metrics["system_health"]["total_requests"]
     if total_requests > 0:
-        success_rate = (
-            metrics["system_health"]["successful_requests"] / total_requests
-        )
+        success_rate = metrics["system_health"]["successful_requests"] / total_requests
         computed_metrics["system_health"]["success_rate"] = success_rate
         computed_metrics["system_health"]["uptime_seconds"] = (
             time.time() - metrics["system_health"]["uptime_start"]

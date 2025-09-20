@@ -21,7 +21,9 @@ class TestSafeJSONParser:
 
     def test_safe_parse_json_invalid_json(self):
         """Test parsing invalid JSON raises SchemaValidationError."""
-        invalid_json = '{"plan": ["vector_search", "graph_search"'  # Missing closing brace
+        invalid_json = (
+            '{"plan": ["vector_search", "graph_search"'  # Missing closing brace
+        )
 
         with pytest.raises(SchemaValidationError) as exc_info:
             SafeJSONParser.safe_parse_json(invalid_json, "planner")
@@ -85,7 +87,9 @@ class TestSafeJSONParser:
 
     def test_safe_parse_json_unicode_characters(self):
         """Test parsing JSON with unicode characters."""
-        unicode_json = '{"plan": ["vector_search"], "description": "Test with émojis 🚀"}'
+        unicode_json = (
+            '{"plan": ["vector_search"], "description": "Test with émojis 🚀"}'
+        )
         result = SafeJSONParser.safe_parse_json(unicode_json, "planner")
 
         assert result["plan"] == ["vector_search"]
@@ -173,7 +177,5 @@ class TestIntegrationScenarios:
 
         # Test with valid JSON but invalid schema
         valid_json = '{"invalid_field": "value"}'
-        parsed_data = SafeJSONParser.safe_parse_json(valid_json, "planner")
-
-        # Should still work since we're not doing strict validation
-        assert parsed_data["invalid_field"] == "value"
+        with pytest.raises(SchemaValidationError):
+            SafeJSONParser.safe_parse_json(valid_json, "planner")

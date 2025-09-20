@@ -1,19 +1,20 @@
 """Status screen for system health monitoring."""
 
 import asyncio
-import psutil
 from datetime import datetime
-from typing import Dict, Any, Optional
+from typing import Any, Dict, Optional
 
+import psutil
 from textual.app import ComposeResult
-from textual.widgets import DataTable, Static, Button
 from textual.containers import Horizontal
+from textual.widgets import Button, DataTable, Static
 from textual.worker import Worker
 
 # Import the actual backend health check functions
 from src.api.health import liveness_check
-from src.tools.neo4j_agent import Neo4jAgent
 from src.tools.chromadb_agent import ChromaDBAgent
+from src.tools.neo4j_agent import Neo4jAgent
+
 from .base_screen import BaseScreen
 
 
@@ -23,17 +24,18 @@ class StatusScreen(BaseScreen):
     def __init__(self) -> None:
         """Initialize the status screen."""
         super().__init__()
-        # Enable auto-refresh every 10 seconds
-        self.set_auto_refresh_interval(10.0)
+        # Disable auto-refresh by default - only refresh when manually requested
+        self.disable_auto_refresh()
         # Explicitly type the worker for mypy
         self._refresh_worker: Optional[Worker] = None
 
     def get_main_content(self) -> ComposeResult:
         """Compose the status screen content."""
-        # Header with refresh button
+        # Header with refresh buttons
         with Horizontal():
             yield Static("System Status", id="status-title")
             yield Button("Refresh", id="refresh-button", variant="primary")
+            yield Button("Auto-Refresh: OFF", id="auto-refresh-button", variant="default")
 
         # Status table
         yield DataTable(id="status-table")
@@ -55,6 +57,25 @@ class StatusScreen(BaseScreen):
         """Handle button presses."""
         if event.button.id == "refresh-button":
             self.action_refresh()
+        elif event.button.id == "auto-refresh-button":
+            self.toggle_auto_refresh()
+
+    def toggle_auto_refresh(self) -> None:
+        """Toggle auto-refresh on/off."""
+        if self._auto_refresh_interval > 0:
+            # Currently on, turn off
+            self.disable_auto_refresh()
+            button = self.query_one("#auto-refresh-button", Button)
+            button.update("Auto-Refresh: OFF")
+            button.variant = "default"
+            self._log_message("Auto-refresh disabled", "info")
+        else:
+            # Currently off, turn on
+            self.enable_auto_refresh(10.0)
+            button = self.query_one("#auto-refresh-button", Button)
+            button.update("Auto-Refresh: ON")
+            button.variant = "success"
+            self._log_message("Auto-refresh enabled (10s interval)", "info")
 
     def action_refresh(self) -> None:
         """Refresh the system status."""
@@ -66,9 +87,7 @@ class StatusScreen(BaseScreen):
         self._log_message("Refreshing system status...", "info")
 
         # Start refresh worker
-        self._refresh_worker = self.run_worker(
-            self.run_health_checks(), exclusive=True
-        )
+        self._refresh_worker = self.run_worker(self.run_health_checks(), exclusive=True)
 
     def _update_last_update_time(self) -> None:
         """Update the last update time display."""
@@ -81,9 +100,7 @@ class StatusScreen(BaseScreen):
         else:
             last_update_text.update("Last updated: Never")
 
-    def _update_status_table(
-        self, status_data: Dict[str, Dict[str, Any]]
-    ) -> None:
+    def _update_status_table(self, status_data: Dict[str, Dict[str, Any]]) -> None:
         """Update the status table with new data."""
         table = self.query_one("#status-table", DataTable)
         table.clear()
@@ -122,10 +139,9 @@ class StatusScreen(BaseScreen):
                 # Use liveness check for basic API status
                 api_health = await liveness_check()
                 api_status = (
-                    "Healthy" if api_health.get("status") == "alive"
-                    else "Error"
+                    "Healthy" if api_health.get("status") == "alive" else "Error"
                 )
-                service_name = api_health.get('service', 'Unknown')
+                service_name = api_health.get("service", "Unknown")
                 status_data["API Server"] = {
                     "status": api_status,
                     "details": f"Service: {service_name}",
@@ -163,8 +179,7 @@ class StatusScreen(BaseScreen):
                 status_data["ChromaDB"] = {
                     "status": "Healthy",
                     "details": (
-                        f"Vector store operational ({collection_count} "
-                        f"collections)"
+                        f"Vector store operational ({collection_count} " f"collections)"
                     ),
                     "last_check": current_time,
                 }

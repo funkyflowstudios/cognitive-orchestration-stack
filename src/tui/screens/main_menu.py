@@ -1,10 +1,10 @@
 """Main menu screen for the Cognitive Orchestration Stack TUI."""
 
 from textual.app import ComposeResult
-from textual.screen import Screen
-from textual.widgets import Header, Footer, OptionList, Static
-from textual.widgets.option_list import Option
 from textual.containers import Vertical
+from textual.screen import Screen
+from textual.widgets import Footer, Header, OptionList, Static
+from textual.widgets.option_list import Option
 
 
 class MainMenuScreen(Screen):
@@ -35,9 +35,7 @@ class MainMenuScreen(Screen):
             )
         yield Footer()
 
-    def on_option_list_option_selected(
-        self, event: OptionList.OptionSelected
-    ) -> None:
+    def on_option_list_option_selected(self, event: OptionList.OptionSelected) -> None:
         """Handle menu item selection."""
         if event.option_id == "quit":
             self.app.exit()

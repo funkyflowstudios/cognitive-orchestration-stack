@@ -48,9 +48,7 @@ def create_research_graph() -> StateGraph:
     return create_graph()
 
 
-def run_research_job(
-    topic: str, job_id: Optional[str] = None
-) -> Dict[str, Any]:
+def run_research_job(topic: str, job_id: Optional[str] = None) -> Dict[str, Any]:
     """Run a complete research job using the ARIS workflow.
 
     Args:
@@ -62,6 +60,7 @@ def run_research_job(
     """
     import uuid
     from pathlib import Path
+
     from .nodes import initialize_job
 
     if job_id is None:
@@ -95,14 +94,11 @@ def run_research_job(
                 if final_state.get("final_output_path")
                 else None
             ),
-            "sources_found": len(
-                final_state.get("scraped_content_references", [])
-            ),
+            "sources_found": len(final_state.get("scraped_content_references", [])),
             "validated_sources": len(
                 [
                     ref
-                    for ref in final_state.get("scraped_content_references",
-    [])
+                    for ref in final_state.get("scraped_content_references", [])
                     if getattr(ref, "is_validated", False)
                 ]
             ),

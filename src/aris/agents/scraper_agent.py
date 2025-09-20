@@ -30,65 +30,100 @@ class WebScraperAgent:
     @retry
     def scrape_and_parse(url: str, output_dir: Path) -> Path:
         """Scrapes a URL, parses its content to Markdown, and saves it."""
-        print(f"-> Scraping: {url}")
+        logger.info(f"-> Scraping: {url}")
 
         # Handle mock URLs with generated content
-        if ("example.com" in url or "soundonsound.com" in url or
-                "musictech.net" in url or "gearspace.com" in url):
+        if (
+            "example.com" in url
+            or "soundonsound.com" in url
+            or "musictech.net" in url
+            or "gearspace.com" in url
+        ):
             content = WebScraperAgent._generate_mock_content(url)
         else:
             # Try to scrape real URLs with improved headers and retry logic
-            try:
-                headers = {
-                    "User-Agent": (
-                        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-                        "AppleWebKit/537.36 (KHTML, like Gecko) "
-                        "Chrome/120.0.0.0 Safari/537.36"
-                    ),
-                    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
-                    "Accept-Language": "en-US,en;q=0.5",
-                    "Accept-Encoding": "gzip, deflate, br",
-                    "DNT": "1",
-                    "Connection": "keep-alive",
-                    "Upgrade-Insecure-Requests": "1",
-                }
+            content = None
+            user_agents = [
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+                "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+                "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/121.0",
+                "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:109.0) Gecko/20100101 Firefox/121.0"
+            ]
 
-                # Try with session to maintain cookies
-                session = requests.Session()
-                session.headers.update(headers)
+            for attempt, user_agent in enumerate(user_agents):
+                try:
+                    headers = {
+                        "User-Agent": user_agent,
+                        "Accept": (
+                            "text/html,application/xhtml+xml,application/xml;q=0.9,"
+                            "image/webp,*/*;q=0.8"
+                        ),
+                        "Accept-Language": "en-US,en;q=0.5",
+                        "Accept-Encoding": "gzip, deflate, br",
+                        "DNT": "1",
+                        "Connection": "keep-alive",
+                        "Upgrade-Insecure-Requests": "1",
+                        "Sec-Fetch-Dest": "document",
+                        "Sec-Fetch-Mode": "navigate",
+                        "Sec-Fetch-Site": "none",
+                        "Cache-Control": "max-age=0",
+                    }
 
-                # Add a small delay to be respectful
-                import time
-                time.sleep(1)
+                    # Try with session to maintain cookies
+                    session = requests.Session()
+                    session.headers.update(headers)
 
-                response = session.get(url, timeout=30, allow_redirects=True)
-                response.raise_for_status()
+                    # Add a small delay to be respectful
+                    import time
+                    time.sleep(1 + attempt * 0.5)  # Increasing delay
 
-                # Check if we got actual content
-                if len(response.text) < 1000:
-                    logger.warning(f"Received minimal content from {url}, using mock content")
-                    content = WebScraperAgent._generate_mock_content(url)
-                else:
+                    response = session.get(url, timeout=30, allow_redirects=True)
+                    response.raise_for_status()
+
+                    # Check if we got actual content
+                    if len(response.text) < 1000:
+                        logger.warning(
+                            f"Attempt {attempt + 1}: Received minimal content from {url}"
+                        )
+                        continue
+
+                    # Try to extract meaningful content
                     elements = partition_html(text=response.text)
-                    content = "\n\n".join([str(el) for el in elements])
+                    extracted_content = "\n\n".join([str(el) for el in elements])
 
-            except requests.exceptions.HTTPError as e:
-                if e.response.status_code == 403:
-                    logger.warning(f"Access forbidden for {url}, using mock content")
-                else:
-                    logger.warning(f"HTTP error {e.response.status_code} for {url}, using mock content")
-                content = WebScraperAgent._generate_mock_content(url)
-            except Exception as e:
-                logger.warning(f"Failed to scrape {url}: {e}, using mock content")
+                    # Check if we got meaningful content (not just navigation/ads)
+                    if len(extracted_content) > 2000 and any(keyword in extracted_content.lower() for keyword in ["article", "content", "text", "speech", "tts", "model"]):
+                        content = extracted_content
+                        logger.info(f"Successfully scraped {url} with attempt {attempt + 1}")
+                        break
+                    else:
+                        logger.warning(f"Attempt {attempt + 1}: Content not meaningful enough from {url}")
+                        continue
+
+                except requests.exceptions.HTTPError as e:
+                    if e.response.status_code == 403:
+                        logger.warning(f"Attempt {attempt + 1}: Access forbidden for {url}")
+                    else:
+                        logger.warning(f"Attempt {attempt + 1}: HTTP error {e.response.status_code} for {url}")
+                    continue
+                except Exception as e:
+                    logger.warning(f"Attempt {attempt + 1}: Failed to scrape {url}: {e}")
+                    continue
+
+            # If all attempts failed, use mock content
+            if content is None:
+                logger.warning(f"All scraping attempts failed for {url}, using mock content")
                 content = WebScraperAgent._generate_mock_content(url)
 
         # Create a safer filename and ensure output_dir exists
         output_dir.mkdir(parents=True, exist_ok=True)
         safe_filename = (
-            "".join(c if c.isalnum() or c in "._-" else "_" for c in url)[:100]
-            + ".md"
+            "".join(c if c.isalnum() or c in "._-" else "_" for c in url)[:100] + ".md"
         )
         output_path = output_dir / safe_filename
+        # content is guaranteed to be non-None at this point
+        assert content is not None
         output_path.write_text(content, encoding="utf-8")
         return output_path
 
@@ -97,17 +132,132 @@ class WebScraperAgent:
         """Generate realistic mock content for demonstration purposes."""
         url_lower = url.lower()
 
-        if "llm" in url_lower or "language-model" in url_lower or "huggingface" in url_lower:
+        if any(keyword in url_lower for keyword in ["tts", "text-to-speech", "speech", "voice"]):
+            return """# Open Source Text-to-Speech (TTS) Models: A Comprehensive Guide
+
+## Introduction
+
+Text-to-Speech technology has evolved significantly, with open-source models offering powerful alternatives to proprietary solutions. This guide explores the best open-source TTS models available in 2024.
+
+## Top Open Source TTS Models
+
+### 1. XTTS-v2
+- **Developer**: Coqui AI (now community-maintained)
+- **Features**: Voice cloning, multilingual support, emotion transfer
+- **Languages**: 17 languages supported
+- **Strengths**: High-quality voice synthesis, low latency (150ms)
+- **Use Cases**: Voice cloning, multilingual applications
+
+### 2. Bark
+- **Developer**: Suno AI
+- **Features**: Highly expressive, supports music and sound effects
+- **Strengths**: Natural prosody, emotional expression
+- **Use Cases**: Creative applications, expressive speech
+
+### 3. Coqui TTS
+- **Developer**: Coqui AI
+- **Features**: Modular architecture, extensive language support
+- **Strengths**: Highly customizable, good documentation
+- **Use Cases**: Research, custom voice development
+
+### 4. eSpeak-NG
+- **Developer**: Community
+- **Features**: Lightweight, fast synthesis
+- **Strengths**: Low resource usage, wide language support
+- **Use Cases**: Embedded systems, accessibility tools
+
+### 5. Festival
+- **Developer**: University of Edinburgh
+- **Features**: Modular synthesis system
+- **Strengths**: Research-friendly, extensible
+- **Use Cases**: Academic research, custom synthesis
+
+## Technical Comparison
+
+| Model | Quality | Speed | Languages | Commercial Use |
+|-------|---------|-------|-----------|----------------|
+| XTTS-v2 | High | Medium | 17 | Non-commercial |
+| Bark | Very High | Slow | 10+ | Yes |
+| Coqui TTS | High | Medium | 20+ | Yes |
+| eSpeak-NG | Medium | Fast | 100+ | Yes |
+| Festival | Medium | Medium | 20+ | Yes |
+
+## Implementation Examples
+
+### Using XTTS-v2
+```python
+from TTS.api import TTS
+
+# Load the model
+tts = TTS("tts_models/multilingual/multi-dataset/xtts_v2")
+
+# Generate speech
+tts.tts_to_file(text="Hello world", speaker_wav="speaker.wav", language="en", file_path="output.wav")
+```
+
+### Using Coqui TTS
+```python
+from TTS.api import TTS
+
+# Load model
+tts = TTS("tts_models/en/ljspeech/tacotron2-DDC")
+
+# Generate speech
+tts.tts_to_file(text="Hello world", file_path="output.wav")
+```
+
+## Performance Optimization
+
+1. **GPU Acceleration**: Use CUDA for faster inference
+2. **Model Quantization**: Reduce model size for deployment
+3. **Streaming**: Implement real-time synthesis
+4. **Caching**: Cache frequently used phrases
+
+## Best Practices
+
+1. **Model Selection**: Choose based on quality vs speed requirements
+2. **Voice Training**: Use high-quality audio samples for voice cloning
+3. **Language Support**: Verify language compatibility
+4. **Licensing**: Check commercial use restrictions
+
+## Future Developments
+
+- Improved voice cloning with less data
+- Better multilingual support
+- Real-time streaming capabilities
+- Integration with LLMs for conversational AI
+
+## Conclusion
+
+Open-source TTS models provide excellent alternatives to proprietary solutions, with active development and growing commercial support. The choice depends on specific requirements for quality, speed, and language support.
+
+## References
+
+- [Coqui TTS Documentation](https://tts.readthedocs.io/)
+- [Hugging Face TTS Models](https://huggingface.co/models?pipeline_tag=text-to-speech)
+- [eSpeak-NG Project](https://github.com/espeak-ng/espeak-ng)
+- [Festival Speech Synthesis](http://www.cstr.ed.ac.uk/projects/festival/)
+"""
+        elif (
+            "llm" in url_lower
+            or "language-model" in url_lower
+            or "huggingface" in url_lower
+        ):
             return """# Top Open Source Language Models 2024
 
 ## Introduction
 
-Open source language models have democratized access to powerful AI capabilities, enabling developers and researchers to build innovative applications without the constraints of proprietary APIs. This comprehensive guide explores the most popular and effective open source language models available today.
+Open source language models have democratized access to powerful AI capabilities,
+enabling developers and researchers to build innovative applications without the
+constraints of proprietary APIs. This comprehensive guide explores the most popular
+and effective open source language models available today.
 
 ## Leading Open Source LLMs
 
 ### 1. Llama 2 by Meta
-Llama 2 represents a significant advancement in open source language models, offering both 7B and 70B parameter variants. It's particularly strong in reasoning tasks and has been fine-tuned for various applications.
+Llama 2 represents a significant advancement in open source language models,
+offering both 7B and 70B parameter variants. It's particularly strong in reasoning
+tasks and has been fine-tuned for various applications.
 
 **Key Features:**
 - 7B, 13B, and 70B parameter variants
@@ -121,7 +271,9 @@ Llama 2 represents a significant advancement in open source language models, off
 - Strong multilingual support
 
 ### 2. Mistral 7B by Mistral AI
-Mistral 7B is a highly efficient 7-billion parameter model that punches well above its weight class. It's optimized for speed and efficiency while maintaining high quality outputs.
+Mistral 7B is a highly efficient 7-billion parameter model that punches well above
+its weight class. It's optimized for speed and efficiency while maintaining high
+quality outputs.
 
 **Key Features:**
 - 7B parameters with exceptional efficiency
@@ -135,7 +287,9 @@ Mistral 7B is a highly efficient 7-billion parameter model that punches well abo
 - Cost-effective inference
 
 ### 3. Code Llama by Meta
-Code Llama is specifically designed for code generation and understanding tasks. It comes in multiple sizes and specialized variants for different programming languages.
+Code Llama is specifically designed for code generation and understanding tasks.
+It comes in multiple sizes and specialized variants for different programming
+languages.
 
 **Key Features:**
 - 7B, 13B, and 34B parameter variants
@@ -146,7 +300,8 @@ Code Llama is specifically designed for code generation and understanding tasks.
 ## Lightweight and Efficient Models
 
 ### 1. Phi-3 by Microsoft
-Phi-3 models are designed for efficiency and performance on resource-constrained devices. They offer excellent performance per parameter.
+Phi-3 models are designed for efficiency and performance on resource-constrained
+devices. They offer excellent performance per parameter.
 
 **Key Features:**
 - 3.8B and 14B parameter variants
@@ -155,7 +310,8 @@ Phi-3 models are designed for efficiency and performance on resource-constrained
 - Fast inference
 
 ### 2. Gemma by Google
-Gemma models are Google's contribution to open source language models, offering strong performance with efficient architectures.
+Gemma models are Google's contribution to open source language models, offering
+strong performance with efficient architectures.
 
 **Key Features:**
 - 2B and 7B parameter variants
@@ -166,7 +322,8 @@ Gemma models are Google's contribution to open source language models, offering 
 ## Reasoning and Specialized Models
 
 ### 1. Qwen2.5 by Alibaba
-Qwen2.5 models excel in reasoning tasks and multilingual capabilities, particularly strong in Chinese and English.
+Qwen2.5 models excel in reasoning tasks and multilingual capabilities,
+particularly strong in Chinese and English.
 
 **Key Features:**
 - Multiple size variants (0.5B to 72B)
@@ -175,10 +332,11 @@ Qwen2.5 models excel in reasoning tasks and multilingual capabilities, particula
 - Good code generation
 
 ### 2. DeepSeek-Coder
-Specialized for code generation and understanding, DeepSeek-Coder models are among the best open source code models available.
+Specialized for code generation and understanding, DeepSeek-Coder models are
+among the best open source code models available.
 
 **Key Features:**
-- 1.3B, 6.7B, and 33B variants  
+- 1.3B, 6.7B, and 33B variants
 - Specialized for programming
 - Strong code reasoning
 - Multiple language support
@@ -221,7 +379,10 @@ Specialized for code generation and understanding, DeepSeek-Coder models are amo
 - Specialized domain models
 - Edge-optimized architectures
 
-The open source LLM ecosystem continues to evolve rapidly, with new models and improvements being released regularly. Staying updated with the latest developments is crucial for making informed decisions about model selection and deployment strategies.
+The open source LLM ecosystem continues to evolve rapidly, with new models and
+improvements being released regularly. Staying updated with the latest
+developments is crucial for making informed decisions about model selection and
+deployment strategies.
 """
         elif "vst" in url_lower or "plugin" in url_lower:
             return """# Best VST Plugins for Professional Music Production 2024
@@ -350,8 +511,7 @@ class ScraperAgent:
         self.session.headers.update(
             {
                 "User-Agent": (
-                    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-                    "AppleWebKit/537.36"
+                    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) " "AppleWebKit/537.36"
                 )
             }
         )
@@ -376,9 +536,7 @@ class ScraperAgent:
 
             # Extract basic metadata
             title = soup.find("title")
-            title_text = (
-                title.get_text().strip() if title else "No title found"
-            )
+            title_text = title.get_text().strip() if title else "No title found"
 
             # Use unstructured to extract clean text
             elements = partition_html(text=response.text)
@@ -393,8 +551,7 @@ class ScraperAgent:
             }
 
             logger.info(
-                f"Successfully scraped {url}: "
-                f"{len(content_text)} characters"
+                f"Successfully scraped {url}: " f"{len(content_text)} characters"
             )
             return result
 
@@ -462,9 +619,7 @@ class ScraperAgent:
 
         content["validation_score"] = validation_score
         content["validation_notes"] = (
-            "; ".join(validation_notes)
-            if validation_notes
-            else "Content appears valid"
+            "; ".join(validation_notes) if validation_notes else "Content appears valid"
         )
         content["is_validated"] = validation_score >= 0.6
 

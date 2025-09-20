@@ -105,15 +105,24 @@ def sample_documents():
     """Provide sample documents for testing document ingestion."""
     return [
         {
-            "content": "Ableton Live is a digital audio workstation (DAW) designed for live performance and music production.",
-            "metadata": {"source": "test", "type": "introduction"}
+            "content": (
+                "Ableton Live is a digital audio workstation (DAW) designed for "
+                "live performance and music production."
+            ),
+            "metadata": {"source": "test", "type": "introduction"},
         },
         {
-            "content": "Key features include real-time audio manipulation, MIDI sequencing, and extensive built-in effects.",
-            "metadata": {"source": "test", "type": "features"}
+            "content": (
+                "Key features include real-time audio manipulation, MIDI sequencing, "
+                "and extensive built-in effects."
+            ),
+            "metadata": {"source": "test", "type": "features"},
         },
         {
-            "content": "The software supports both Mac and Windows platforms and integrates with various hardware controllers.",
-            "metadata": {"source": "test", "type": "compatibility"}
-        }
+            "content": (
+                "The software supports both Mac and Windows platforms and integrates "
+                "with various hardware controllers."
+            ),
+            "metadata": {"source": "test", "type": "compatibility"},
+        },
     ]

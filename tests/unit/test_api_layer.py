@@ -4,8 +4,9 @@ Unit tests for API layer components.
 Tests FastAPI endpoints, middleware, error handling, and response formats.
 """
 
+from unittest.mock import MagicMock, patch
+
 import pytest
-from unittest.mock import patch, MagicMock
 from fastapi.testclient import TestClient
 
 from src.api.server import app
@@ -55,8 +56,10 @@ class TestAPIServer:
 
     def test_request_tracking_middleware(self, client):
         """Verifies that request tracking middleware works."""
-        with patch("src.api.server.request_count") as mock_request_count, \
-             patch("src.api.server.success_count") as mock_success_count:
+        with (
+            patch("src.api.server.request_count") as mock_request_count,
+            patch("src.api.server.success_count") as mock_success_count,
+        ):
 
             response = client.get("/health/live")
             assert response.status_code == 200
@@ -78,7 +81,7 @@ class TestAPIServer:
     def test_startup_shutdown_events(self):
         """Verifies that startup and shutdown events are defined."""
         # Check that the events are registered
-        assert hasattr(app, 'router')
+        assert hasattr(app, "router")
         # The events are defined in the app, but we can't easily test them
         # without actually starting the server
 
@@ -103,9 +106,7 @@ class TestHealthEndpoints:
 
     @patch("src.api.health._get_neo4j_agent")
     @patch("src.api.health._get_chromadb_agent")
-    def test_readiness_check_success(
-        self, mock_chromadb, mock_neo4j, client
-    ):
+    def test_readiness_check_success(self, mock_chromadb, mock_neo4j, client):
         """Verifies that readiness check passes when all services are
         healthy."""
         # Mock successful health checks
@@ -175,17 +176,17 @@ class TestHealthEndpoints:
             )
 
             # Mock other services as healthy
-            with patch("src.api.health._get_neo4j_agent") as mock_neo4j, \
-                 patch("src.api.health._get_chromadb_agent") as mock_chromadb:
+            with (
+                patch("src.api.health._get_neo4j_agent") as mock_neo4j,
+                patch("src.api.health._get_chromadb_agent") as mock_chromadb,
+            ):
 
                 mock_neo4j_instance = MagicMock()
                 mock_neo4j_instance.query.return_value = []
                 mock_neo4j.return_value = mock_neo4j_instance
 
                 mock_chromadb_instance = MagicMock()
-                mock_chromadb_instance.similarity_search.return_value = [
-                    "test"
-                ]
+                mock_chromadb_instance.similarity_search.return_value = ["test"]
                 mock_chromadb.return_value = mock_chromadb_instance
 
                 response = client.get("/health/ready")
@@ -209,7 +210,7 @@ class TestMetricsEndpoints:
         mock_metrics = {
             "counters": {"requests": 100},
             "timers": {"response_time": {"avg": 50.0}},
-            "error_counts": {"500": 5}
+            "error_counts": {"500": 5},
         }
         mock_get_metrics.return_value = mock_metrics
 
@@ -238,7 +239,7 @@ class TestMetricsEndpoints:
             "system_health": {
                 "uptime_seconds": 3600,
                 "total_requests": 100,
-                "success_rate": 0.95
+                "success_rate": 0.95,
             },
             "counters": {"requests": 100},
             "timers": {
@@ -247,10 +248,10 @@ class TestMetricsEndpoints:
                     "min": 10.0,
                     "max": 200.0,
                     "p95": 80.0,
-                    "count": 100
+                    "count": 100,
                 }
             },
-            "error_counts": {"500": 5}
+            "error_counts": {"500": 5},
         }
         mock_get_metrics.return_value = mock_metrics
 
@@ -304,7 +305,7 @@ class TestMetricsEndpoints:
         """Verifies that health metrics endpoint works correctly."""
         mock_metrics = {
             "system_health": {"success_rate": 0.95, "total_requests": 100},
-            "error_counts": {"500": 5}
+            "error_counts": {"500": 5},
         }
         mock_get_metrics.return_value = mock_metrics
 

@@ -1,9 +1,9 @@
 """Screen modules for the TUI application."""
 
+from .aris import ArisScreen
+from .ingest import IngestScreen
 from .main_menu import MainMenuScreen
 from .query import QueryScreen
-from .ingest import IngestScreen
-from .aris import ArisScreen
 from .status import StatusScreen
 
 __all__ = [

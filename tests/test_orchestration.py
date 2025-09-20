@@ -28,7 +28,7 @@ async def test_planner_generates_plan(mock_get_client):
     """Test that planner generates a plan correctly."""
     # Configure mock LLM to return JSON list as string
     mock_client = mock_get_client.return_value
-    mock_client.generate.return_value = {"response": "[\"vector_search\"]"}
+    mock_client.generate.return_value = {"response": '["vector_search"]'}
 
     base_state = AgentState(query="What is AI?")
     plan_result = planner_node(base_state)
@@ -43,7 +43,7 @@ async def test_executor_dispatch(mock_vs, mock_get_client):
     """Test that executor dispatches tools correctly."""
     # Configure mock LLM for planner
     mock_client = mock_get_client.return_value
-    mock_client.generate.return_value = {"response": "[\"vector_search\"]"}
+    mock_client.generate.return_value = {"response": '["vector_search"]'}
 
     # Create state with plan
     base_state = AgentState(query="What is AI?")

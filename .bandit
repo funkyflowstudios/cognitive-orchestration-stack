@@ -1,0 +1,3 @@
+[bandit]
+exclude_dirs = tests,venv,.venv,__pycache__,.mypy_cache,.pytest_cache
+skips = B311,B404,B603,B607

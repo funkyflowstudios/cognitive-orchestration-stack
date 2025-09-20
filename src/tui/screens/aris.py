@@ -4,12 +4,13 @@ import asyncio
 from typing import Optional
 
 from textual.app import ComposeResult
-from textual.widgets import RichLog, Button, Static, Input
 from textual.containers import Horizontal
+from textual.widgets import Button, Input, RichLog, Static
 from textual.worker import Worker, get_current_worker
 
 # Import the actual ARIS backend
 from src.aris.orchestration.graph import run_research_job
+
 from ..widgets.clipboard_input import ClipboardInput
 from .base_screen import BaseScreen
 
@@ -34,9 +35,7 @@ class ArisScreen(BaseScreen):
 
         # Action buttons
         with Horizontal():
-            yield Button(
-                "Start Research", id="start-button", variant="primary"
-            )
+            yield Button("Start Research", id="start-button", variant="primary")
             yield Button("Clear", id="clear-button")
 
         # Research log
@@ -67,9 +66,7 @@ class ArisScreen(BaseScreen):
         topic = topic_input.value.strip()
 
         if not topic:
-            self._log_message(
-                "Error: Please enter a research topic"
-            )
+            self._log_message("Error: Please enter a research topic")
             return
 
         # Cancel any existing worker
@@ -115,7 +112,8 @@ class ArisScreen(BaseScreen):
                 self._log_status, f"ARIS research started for: {topic}", "info"
             )
 
-            # Don't show demo mode message by default - let the actual scraping results determine this
+            # Don't show demo mode message by default - let the actual scraping
+            # results determine this
 
             # Check for cancellation before starting heavy work
             if get_current_worker().is_cancelled:
@@ -165,7 +163,8 @@ class ArisScreen(BaseScreen):
                 if results.get("output_path"):
                     # Show relative path from project root
                     from pathlib import Path
-                    output_path = Path(results['output_path'])
+
+                    output_path = Path(results["output_path"])
                     project_root = Path(__file__).parent.parent.parent.parent
                     try:
                         relative_path = output_path.relative_to(project_root)
@@ -182,18 +181,17 @@ class ArisScreen(BaseScreen):
             else:
                 self.call_later(
                     self._log_message,
-                    f"❌ Research failed: "
-                    f"{results.get('error', 'Unknown error')}",
+                    f"❌ Research failed: " f"{results.get('error', 'Unknown error')}",
                 )
                 # Also log to status log
                 self.call_later(
-                    self._log_status, f"ARIS research failed: {results.get('error', 'Unknown error')}", "error"
+                    self._log_status,
+                    f"ARIS research failed: {results.get('error', 'Unknown error')}",
+                    "error",
                 )
 
         except Exception as e:
-            self.call_later(
-                self._log_message, f"❌ Research failed: {str(e)}"
-            )
+            self.call_later(self._log_message, f"❌ Research failed: {str(e)}")
             # Also log to status log
             self.call_later(
                 self._log_status, f"ARIS research failed: {str(e)}", "error"

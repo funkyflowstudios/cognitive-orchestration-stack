@@ -21,9 +21,7 @@ async def get_metrics_endpoint():
         return get_metrics()
     except Exception as e:
         logger.error("Error getting metrics: %s", e)
-        raise HTTPException(
-            status_code=500, detail=f"Error getting metrics: {str(e)}"
-        )
+        raise HTTPException(status_code=500, detail=f"Error getting metrics: {str(e)}")
 
 
 @router.get("/dashboard")

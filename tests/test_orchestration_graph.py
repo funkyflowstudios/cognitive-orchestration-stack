@@ -38,8 +38,8 @@ class TestGraphCompilation:
     def test_graph_is_compiled(self):
         """Test that GRAPH is properly compiled."""
         assert GRAPH is not None
-        assert hasattr(GRAPH, 'invoke')
-        assert hasattr(GRAPH, 'ainvoke')
+        assert hasattr(GRAPH, "invoke")
+        assert hasattr(GRAPH, "ainvoke")
 
     def test_graph_invoke_method(self, sample_agent_state):
         """Test that GRAPH has invoke method."""
@@ -58,21 +58,22 @@ class TestGraphExecution:
     @pytest.mark.asyncio
     async def test_graph_execution_with_mocks(self, sample_agent_state):
         """Test full graph execution with mocked dependencies."""
-        with (patch('src.orchestration.nodes._get_ollama_client') as mock_get_client,
-              patch('src.orchestration.nodes._get_chromadb_agent') as mock_get_chromadb,
-              patch('src.orchestration.nodes._get_neo4j_agent') as mock_get_neo4j):
+        with (
+            patch("src.orchestration.nodes._get_ollama_client") as mock_get_client,
+            patch("src.orchestration.nodes._get_chromadb_agent") as mock_get_chromadb,
+            patch("src.orchestration.nodes._get_neo4j_agent") as mock_get_neo4j,
+        ):
 
             # Setup mocks
             mock_client = MagicMock()
             mock_client.generate.side_effect = [
                 {"response": '{"plan": ["vector_search"]}'},  # planner
-                {"response": "Final synthesized response"}  # synthesizer
+                {"response": "Final synthesized response"},  # synthesizer
             ]
             mock_get_client.return_value = mock_client
 
             mock_chromadb = MagicMock()
-            mock_chromadb.similarity_search.return_value = \
-    ["Document 1", "Document 2"]
+            mock_chromadb.similarity_search.return_value = ["Document 1", "Document 2"]
             mock_get_chromadb.return_value = mock_chromadb
 
             mock_neo4j = MagicMock()
@@ -92,15 +93,17 @@ class TestGraphExecution:
 
     def test_graph_execution_sync(self, sample_agent_state):
         """Test synchronous graph execution."""
-        with (patch('src.orchestration.nodes._get_ollama_client') as mock_get_client,
-              patch('src.orchestration.nodes._get_chromadb_agent') as mock_get_chromadb,
-              patch('src.orchestration.nodes._get_neo4j_agent') as mock_get_neo4j):
+        with (
+            patch("src.orchestration.nodes._get_ollama_client") as mock_get_client,
+            patch("src.orchestration.nodes._get_chromadb_agent") as mock_get_chromadb,
+            patch("src.orchestration.nodes._get_neo4j_agent") as mock_get_neo4j,
+        ):
 
             # Setup mocks
             mock_client = MagicMock()
             mock_client.generate.side_effect = [
                 {"response": '{"plan": ["vector_search"]}'},  # planner
-                {"response": "Final synthesized response"}  # synthesizer
+                {"response": "Final synthesized response"},  # synthesizer
             ]
             mock_get_client.return_value = mock_client
 
@@ -133,15 +136,17 @@ class TestGraphExecution:
 
         sample_agent_state.ui = ui_callback
 
-        with (patch('src.orchestration.nodes._get_ollama_client') as mock_get_client,
-              patch('src.orchestration.nodes._get_chromadb_agent') as mock_get_chromadb,
-              patch('src.orchestration.nodes._get_neo4j_agent') as mock_get_neo4j):
+        with (
+            patch("src.orchestration.nodes._get_ollama_client") as mock_get_client,
+            patch("src.orchestration.nodes._get_chromadb_agent") as mock_get_chromadb,
+            patch("src.orchestration.nodes._get_neo4j_agent") as mock_get_neo4j,
+        ):
 
             # Setup mocks
             mock_client = MagicMock()
             mock_client.generate.side_effect = [
                 {"response": '{"plan": ["vector_search"]}'},  # planner
-                {"response": "Final synthesized response"}  # synthesizer
+                {"response": "Final synthesized response"},  # synthesizer
             ]
             mock_get_client.return_value = mock_client
 
@@ -158,7 +163,8 @@ class TestGraphExecution:
 
             # Verify UI callbacks were made
             assert len(ui_calls) > 0
-            # Should have planning_complete, tool_start, tool_done, synth_start, and Answer ready
+            # Should have planning_complete, tool_start, tool_done, synth_start,
+            # and Answer ready
             assert any("planning_complete" in call for call in ui_calls)
             assert any("tool_start:" in call for call in ui_calls)
             assert any("tool_done:" in call for call in ui_calls)
@@ -168,9 +174,11 @@ class TestGraphExecution:
     @pytest.mark.asyncio
     async def test_graph_execution_error_handling(self, sample_agent_state):
         """Test graph execution error handling."""
-        with (patch('src.orchestration.nodes._get_ollama_client') as mock_get_client,
-              patch('src.orchestration.nodes._get_chromadb_agent') as mock_get_chromadb,
-              patch('src.orchestration.nodes._get_neo4j_agent') as mock_get_neo4j):
+        with (
+            patch("src.orchestration.nodes._get_ollama_client") as mock_get_client,
+            patch("src.orchestration.nodes._get_chromadb_agent") as mock_get_chromadb,
+            patch("src.orchestration.nodes._get_neo4j_agent") as mock_get_neo4j,
+        ):
 
             # Setup mocks to raise exceptions
             mock_client = MagicMock()
@@ -178,8 +186,7 @@ class TestGraphExecution:
             mock_get_client.return_value = mock_client
 
             mock_chromadb = MagicMock()
-            mock_chromadb.similarity_search.side_effect = \
-    Exception("ChromaDB error")
+            mock_chromadb.similarity_search.side_effect = Exception("ChromaDB error")
             mock_get_chromadb.return_value = mock_chromadb
 
             mock_neo4j = MagicMock()
@@ -201,16 +208,18 @@ class TestGraphStateTransitions:
     @pytest.mark.asyncio
     async def test_state_evolution_through_graph(self, sample_agent_state):
         """Test how state evolves through graph execution."""
-        with (patch('src.orchestration.nodes._get_ollama_client') as mock_get_client,
-              patch('src.orchestration.nodes._get_chromadb_agent') as mock_get_chromadb,
-              patch('src.orchestration.nodes._get_neo4j_agent') as mock_get_neo4j):
+        with (
+            patch("src.orchestration.nodes._get_ollama_client") as mock_get_client,
+            patch("src.orchestration.nodes._get_chromadb_agent") as mock_get_chromadb,
+            patch("src.orchestration.nodes._get_neo4j_agent") as mock_get_neo4j,
+        ):
 
             # Setup mocks
             mock_client = MagicMock()
             mock_client.generate.side_effect = [
                 {"response": '{"plan": ["vector_search", "graph_search"]}'},
-     # planner
-                {"response": "Final synthesized response"}  # synthesizer
+                # planner
+                {"response": "Final synthesized response"},  # synthesizer
             ]
             mock_get_client.return_value = mock_client
 
@@ -225,15 +234,22 @@ class TestGraphStateTransitions:
             # Execute graph
             result = await GRAPH.ainvoke(sample_agent_state)
 
-            # Verify state evolution (LangGraph returns dict, convert to AgentState for testing)
+            # Verify state evolution
+            # (LangGraph returns dict, convert to AgentState for testing)
             assert isinstance(result, dict)
             agent_state = AgentState(**result)
-            assert agent_state.query == sample_agent_state.query  # Original query preserved
+            assert (
+                agent_state.query == sample_agent_state.query
+            )  # Original query preserved
             assert len(agent_state.plan) == 2  # Plan was set by planner
             assert "vector_search" in agent_state.plan
             assert "graph_search" in agent_state.plan
             assert len(agent_state.tool_output) == 2  # Two tools executed
             assert "Vector result" in agent_state.tool_output
-            assert any("Graph result" in str(output) for output in agent_state.tool_output)
-            assert agent_state.response == "Final synthesized response"  # Final response set
+            assert any(
+                "Graph result" in str(output) for output in agent_state.tool_output
+            )
+            assert (
+                agent_state.response == "Final synthesized response"
+            )  # Final response set
             assert agent_state.iteration == 1  # Iteration incremented by validator

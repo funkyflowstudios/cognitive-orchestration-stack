@@ -148,21 +148,15 @@ def planner_node(state: AgentState) -> dict:
     for attempt in range(max_retries):
         try:
             # Call Ollama client directly (synchronous)
-            response = _get_ollama_client().generate(
-                settings.ollama_model, prompt
-            )
+            response = _get_ollama_client().generate(settings.ollama_model, prompt)
 
             # Log the raw response for debugging
             raw_response = response.get("response", "")
-            logger.debug(
-                "LLM raw response (attempt %d): %s", attempt + 1, raw_response
-            )
+            logger.debug("LLM raw response (attempt %d): %s", attempt + 1, raw_response)
 
             # Use safe JSON parser with schema validation
             try:
-                plan_data = SafeJSONParser.safe_parse_json(
-                    raw_response, "planner"
-                )
+                plan_data = SafeJSONParser.safe_parse_json(raw_response, "planner")
                 plan = plan_data["plan"]
 
                 if state.ui:
@@ -173,16 +167,13 @@ def planner_node(state: AgentState) -> dict:
 
             except SchemaValidationError as e:
                 logger.error(
-                    "Schema validation error on attempt %d: %s. "
-                    "Raw response: %s",
+                    "Schema validation error on attempt %d: %s. " "Raw response: %s",
                     attempt + 1,
                     e,
                     raw_response,
                 )
                 if attempt == max_retries - 1:
-                    logger.error(
-                        "All retry attempts failed. Using fallback plan."
-                    )
+                    logger.error("All retry attempts failed. Using fallback plan.")
                     return {"plan": ["vector_search"]}
                 # Continue to next retry attempt
                 continue
@@ -220,9 +211,7 @@ def tool_executor_node(state: AgentState) -> dict:
                     try:
                         asyncio.get_running_loop()
                         # We're in an async context, use thread pool
-                        with concurrent.futures.ThreadPoolExecutor() as (
-                            executor
-                        ):
+                        with concurrent.futures.ThreadPoolExecutor() as (executor):
                             future = executor.submit(asyncio.run, output)
                             output = future.result()
                     except RuntimeError:

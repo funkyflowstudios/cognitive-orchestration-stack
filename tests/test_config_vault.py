@@ -24,75 +24,80 @@ class TestVaultIntegration:
         mock_vault_client = MagicMock()
         mock_vault_client.is_authenticated.return_value = True
         mock_vault_client.secrets.kv.v2.read_secret_version.return_value = {
-            'data': {
-                'data': {
-                    'neo4j_uri': 'bolt://vault-host:7687',
-                    'neo4j_user': 'vault_user',
-                    'neo4j_password': 'vault_password',
-                    'ollama_host': 'http://vault-host:11434',
-                    'ollama_model': 'vault_model',
-                    'ollama_embedding_model': 'vault_embedding',
-                    'log_level': 'INFO'
+            "data": {
+                "data": {
+                    "neo4j_uri": "bolt://vault-host:7687",
+                    "neo4j_user": "vault_user",
+                    "neo4j_password": "vault_password",
+                    "ollama_host": "http://vault-host:11434",
+                    "ollama_model": "vault_model",
+                    "ollama_embedding_model": "vault_embedding",
+                    "log_level": "INFO",
                 }
             }
         }
 
-        with patch('src.config.hvac') as mock_hvac, \
-             patch('src.config.VAULT_AVAILABLE', True):
+        with (
+            patch("src.config.hvac") as mock_hvac,
+            patch("src.config.VAULT_AVAILABLE", True),
+        ):
             mock_hvac.Client.return_value = mock_vault_client
 
             secrets = load_vault_secrets(
                 vault_addr="https://vault.example.com:8200",
                 vault_token="test_token",
-                secret_path="secret/data/agent_stack"
+                secret_path="secret/data/agent_stack",
             )
 
-            assert secrets['neo4j_uri'] == 'bolt://vault-host:7687'
-            assert secrets['neo4j_user'] == 'vault_user'
-            assert secrets['neo4j_password'] == 'vault_password'
-            assert secrets['ollama_host'] == 'http://vault-host:11434'
-            assert secrets['ollama_model'] == 'vault_model'
-            assert secrets['ollama_embedding_model'] == 'vault_embedding'
-            assert secrets['log_level'] == 'INFO'
+            assert secrets["neo4j_uri"] == "bolt://vault-host:7687"
+            assert secrets["neo4j_user"] == "vault_user"
+            assert secrets["neo4j_password"] == "vault_password"
+            assert secrets["ollama_host"] == "http://vault-host:11434"
+            assert secrets["ollama_model"] == "vault_model"
+            assert secrets["ollama_embedding_model"] == "vault_embedding"
+            assert secrets["log_level"] == "INFO"
 
     def test_load_vault_secrets_authentication_failure(self):
         """Test Vault authentication failure."""
         mock_vault_client = MagicMock()
         mock_vault_client.is_authenticated.return_value = False
 
-        with patch('src.config.hvac') as mock_hvac, \
-             patch('src.config.VAULT_AVAILABLE', True):
+        with (
+            patch("src.config.hvac") as mock_hvac,
+            patch("src.config.VAULT_AVAILABLE", True),
+        ):
             mock_hvac.Client.return_value = mock_vault_client
 
-            with pytest.raises(Exception,
-    match="Failed to authenticate with Vault"):
+            with pytest.raises(Exception, match="Failed to authenticate with Vault"):
                 load_vault_secrets(
                     vault_addr="https://vault.example.com:8200",
                     vault_token="invalid_token",
-                    secret_path="secret/data/agent_stack"
+                    secret_path="secret/data/agent_stack",
                 )
 
     def test_load_vault_secrets_connection_error(self):
         """Test Vault connection error."""
-        with patch('src.config.hvac') as mock_hvac, \
-             patch('src.config.VAULT_AVAILABLE', True):
+        with (
+            patch("src.config.hvac") as mock_hvac,
+            patch("src.config.VAULT_AVAILABLE", True),
+        ):
             mock_hvac.Client.side_effect = Exception("Connection failed")
 
             with pytest.raises(Exception, match="Connection failed"):
                 load_vault_secrets(
                     vault_addr="https://vault.example.com:8200",
                     vault_token="test_token",
-                    secret_path="secret/data/agent_stack"
+                    secret_path="secret/data/agent_stack",
                 )
 
     def test_load_vault_secrets_hvac_not_available(self):
         """Test Vault integration when hvac is not available."""
-        with patch('src.config.VAULT_AVAILABLE', False):
+        with patch("src.config.VAULT_AVAILABLE", False):
             with pytest.raises(ImportError, match="hvac package is required"):
                 load_vault_secrets(
                     vault_addr="https://vault.example.com:8200",
                     vault_token="test_token",
-                    secret_path="secret/data/agent_stack"
+                    secret_path="secret/data/agent_stack",
                 )
 
 
@@ -181,7 +186,7 @@ VAULT_TOKEN=prod_vault_token
 
     def test_load_environment_config_nonexistent(self):
         """Test loading non-existent environment configuration."""
-        with patch('src.config.load_dotenv') as mock_load_dotenv:
+        with patch("src.config.load_dotenv") as mock_load_dotenv:
             load_environment_config("nonexistent")
             # Should not call load_dotenv for non-existent file
             mock_load_dotenv.assert_not_called()
@@ -195,107 +200,123 @@ class TestGetSettingsWithVault:
         mock_vault_client = MagicMock()
         mock_vault_client.is_authenticated.return_value = True
         mock_vault_client.secrets.kv.v2.read_secret_version.return_value = {
-            'data': {
-                'data': {
-                    'neo4j_uri': 'bolt://vault-host:7687',
-                    'neo4j_user': 'vault_user',
-                    'neo4j_password': 'vault_password',
-                    'ollama_host': 'http://vault-host:11434',
-                    'ollama_model': 'vault_model',
-                    'ollama_embedding_model': 'vault_embedding',
-                    'log_level': 'INFO'
+            "data": {
+                "data": {
+                    "neo4j_uri": "bolt://vault-host:7687",
+                    "neo4j_user": "vault_user",
+                    "neo4j_password": "vault_password",
+                    "ollama_host": "http://vault-host:11434",
+                    "ollama_model": "vault_model",
+                    "ollama_embedding_model": "vault_embedding",
+                    "log_level": "INFO",
                 }
             }
         }
 
-        with patch('src.config.hvac') as mock_hvac, \
-             patch('src.config.VAULT_AVAILABLE', True):
+        with (
+            patch("src.config.hvac") as mock_hvac,
+            patch("src.config.VAULT_AVAILABLE", True),
+        ):
             mock_hvac.Client.return_value = mock_vault_client
 
             # Set up environment for Vault
-            with patch.dict(os.environ, {
-                "APP_ENV": "prod",
-                "VAULT_ADDR": "https://vault.example.com:8200",
-                "VAULT_TOKEN": "test_token",
-                "VAULT_SECRET_PATH": "secret/data/agent_stack"
-            }):
+            with patch.dict(
+                os.environ,
+                {
+                    "APP_ENV": "prod",
+                    "VAULT_ADDR": "https://vault.example.com:8200",
+                    "VAULT_TOKEN": "test_token",
+                    "VAULT_SECRET_PATH": "secret/data/agent_stack",
+                },
+            ):
                 # Clear cache using the cached version
                 from src.config import get_cached_settings
+
                 get_cached_settings.cache_clear()
 
                 settings = get_settings()
 
                 # Verify Vault secrets were loaded
-                assert settings.neo4j_uri == 'bolt://vault-host:7687'
-                assert settings.neo4j_user == 'vault_user'
-                assert settings.neo4j_password == 'vault_password'
-                assert settings.ollama_host == 'http://vault-host:11434'
-                assert settings.ollama_model == 'vault_model'
-                assert settings.ollama_embedding_model == 'vault_embedding'
-                assert settings.log_level == 'INFO'
+                assert settings.neo4j_uri == "bolt://vault-host:7687"
+                assert settings.neo4j_user == "vault_user"
+                assert settings.neo4j_password == "vault_password"
+                assert settings.ollama_host == "http://vault-host:11434"
+                assert settings.ollama_model == "vault_model"
+                assert settings.ollama_embedding_model == "vault_embedding"
+                assert settings.log_level == "INFO"
 
     def test_get_settings_with_vault_failure_fallback(self):
         """Test get_settings with Vault failure falls back to environment variables."""
-        with patch('src.config.hvac') as mock_hvac, \
-             patch('src.config.VAULT_AVAILABLE', True):
+        with (
+            patch("src.config.hvac") as mock_hvac,
+            patch("src.config.VAULT_AVAILABLE", True),
+        ):
             mock_hvac.Client.side_effect = Exception("Vault connection failed")
 
             # Set up environment for Vault but with fallback values
-            with patch.dict(os.environ, {
-                "APP_ENV": "prod",
-                "VAULT_ADDR": "https://vault.example.com:8200",
-                "VAULT_TOKEN": "test_token",
-                "NEO4J_URI": "bolt://fallback-host:7687",
-                "NEO4J_USER": "fallback_user",
-                "NEO4J_PASSWORD": "fallback_password",
-                "OLLAMA_HOST": "http://fallback-host:11434",
-                "OLLAMA_MODEL": "fallback_model",
-                "OLLAMA_EMBEDDING_MODEL": "fallback_embedding",
-                "LOG_LEVEL": "WARNING"
-            }):
+            with patch.dict(
+                os.environ,
+                {
+                    "APP_ENV": "prod",
+                    "VAULT_ADDR": "https://vault.example.com:8200",
+                    "VAULT_TOKEN": "test_token",
+                    "NEO4J_URI": "bolt://fallback-host:7687",
+                    "NEO4J_USER": "fallback_user",
+                    "NEO4J_PASSWORD": "fallback_password",
+                    "OLLAMA_HOST": "http://fallback-host:11434",
+                    "OLLAMA_MODEL": "fallback_model",
+                    "OLLAMA_EMBEDDING_MODEL": "fallback_embedding",
+                    "LOG_LEVEL": "WARNING",
+                },
+            ):
                 # Clear cache using the cached version
                 from src.config import get_cached_settings
+
                 get_cached_settings.cache_clear()
 
                 settings = get_settings()
 
                 # Verify fallback values were used
-                assert settings.neo4j_uri == 'bolt://fallback-host:7687'
-                assert settings.neo4j_user == 'fallback_user'
-                assert settings.neo4j_password == 'fallback_password'
-                assert settings.ollama_host == 'http://fallback-host:11434'
-                assert settings.ollama_model == 'fallback_model'
-                assert settings.ollama_embedding_model == 'fallback_embedding'
-                assert settings.log_level == 'WARNING'
+                assert settings.neo4j_uri == "bolt://fallback-host:7687"
+                assert settings.neo4j_user == "fallback_user"
+                assert settings.neo4j_password == "fallback_password"
+                assert settings.ollama_host == "http://fallback-host:11434"
+                assert settings.ollama_model == "fallback_model"
+                assert settings.ollama_embedding_model == "fallback_embedding"
+                assert settings.log_level == "WARNING"
 
     def test_get_settings_without_vault_config(self):
         """Test get_settings without Vault configuration uses environment variables."""
-        with patch('src.config.load_environment_config'):
+        with patch("src.config.load_environment_config"):
             # Set up environment without Vault configuration
-            with patch.dict(os.environ, {
-                "APP_ENV": "dev",
-                "NEO4J_URI": "bolt://env-host:7687",
-                "NEO4J_USER": "env_user",
-                "NEO4J_PASSWORD": "env_password",
-                "OLLAMA_HOST": "http://env-host:11434",
-                "OLLAMA_MODEL": "env_model",
-                "OLLAMA_EMBEDDING_MODEL": "env_embedding",
-                "LOG_LEVEL": "DEBUG"
-            }):
+            with patch.dict(
+                os.environ,
+                {
+                    "APP_ENV": "dev",
+                    "NEO4J_URI": "bolt://env-host:7687",
+                    "NEO4J_USER": "env_user",
+                    "NEO4J_PASSWORD": "env_password",
+                    "OLLAMA_HOST": "http://env-host:11434",
+                    "OLLAMA_MODEL": "env_model",
+                    "OLLAMA_EMBEDDING_MODEL": "env_embedding",
+                    "LOG_LEVEL": "DEBUG",
+                },
+            ):
                 # Clear cache using the cached version
                 from src.config import get_cached_settings
+
                 get_cached_settings.cache_clear()
 
                 settings = get_settings()
 
                 # Verify environment variables were used
-                assert settings.neo4j_uri == 'bolt://env-host:7687'
-                assert settings.neo4j_user == 'env_user'
-                assert settings.neo4j_password == 'env_password'
-                assert settings.ollama_host == 'http://env-host:11434'
-                assert settings.ollama_model == 'env_model'
-                assert settings.ollama_embedding_model == 'env_embedding'
-                assert settings.log_level == 'DEBUG'
+                assert settings.neo4j_uri == "bolt://env-host:7687"
+                assert settings.neo4j_user == "env_user"
+                assert settings.neo4j_password == "env_password"
+                assert settings.ollama_host == "http://env-host:11434"
+                assert settings.ollama_model == "env_model"
+                assert settings.ollama_embedding_model == "env_embedding"
+                assert settings.log_level == "DEBUG"
 
 
 class TestSettingsVaultFields:
@@ -303,10 +324,14 @@ class TestSettingsVaultFields:
 
     def test_settings_vault_fields_defaults(self):
         """Test Settings with default Vault field values."""
-        with patch.dict(os.environ, {
-            "NEO4J_PASSWORD": "test_password",
-            "OLLAMA_EMBEDDING_MODEL": "test_embedding"
-        }, clear=True):
+        with patch.dict(
+            os.environ,
+            {
+                "NEO4J_PASSWORD": "test_password",
+                "OLLAMA_EMBEDDING_MODEL": "test_embedding",
+            },
+            clear=True,
+        ):
             settings = Settings()
 
             # Test Vault fields have correct defaults
@@ -318,15 +343,19 @@ class TestSettingsVaultFields:
 
     def test_settings_vault_fields_custom(self):
         """Test Settings with custom Vault field values."""
-        with patch.dict(os.environ, {
-            "NEO4J_PASSWORD": "test_password",
-            "OLLAMA_EMBEDDING_MODEL": "test_embedding",
-            "VAULT_ADDR": "https://custom-vault:8200",
-            "VAULT_TOKEN": "custom_token",
-            "VAULT_SECRET_PATH": "custom/secret/path",
-            "VAULT_MOUNT_POINT": "custom_mount",
-            "APP_ENV": "staging"
-        }, clear=True):
+        with patch.dict(
+            os.environ,
+            {
+                "NEO4J_PASSWORD": "test_password",
+                "OLLAMA_EMBEDDING_MODEL": "test_embedding",
+                "VAULT_ADDR": "https://custom-vault:8200",
+                "VAULT_TOKEN": "custom_token",
+                "VAULT_SECRET_PATH": "custom/secret/path",
+                "VAULT_MOUNT_POINT": "custom_mount",
+                "APP_ENV": "staging",
+            },
+            clear=True,
+        ):
             settings = Settings()
 
             # Test Vault fields have custom values

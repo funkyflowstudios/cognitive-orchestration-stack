@@ -5,17 +5,13 @@ import subprocess
 import sys
 from pathlib import Path
 
+
 def run_bandit():
     """Run Bandit security analysis."""
     print("Running Bandit security analysis...")
 
     # Run Bandit on the source code
-    cmd = [
-        "bandit",
-        "-r", "src/",
-        "-f", "json",
-        "-o", "security-results.json"
-    ]
+    cmd = ["bandit", "-r", "src/", "-f", "json", "-o", "security-results.json"]
 
     try:
         result = subprocess.run(cmd, capture_output=True, text=True)
@@ -33,6 +29,7 @@ def run_bandit():
     except FileNotFoundError:
         print("Bandit not found. Please install it with: pip install bandit")
         return False
+
 
 def run_safety():
     """Run Safety to check for known security vulnerabilities in dependencies."""
@@ -57,6 +54,7 @@ def run_safety():
         print("Safety not found. Please install it with: pip install safety")
         return False
 
+
 def main():
     """Main function."""
     print("Starting security testing...")
@@ -64,6 +62,7 @@ def main():
     # Change to project root directory
     project_root = Path(__file__).parent.parent.parent
     import os
+
     os.chdir(project_root)
 
     # Run security tests
@@ -76,6 +75,7 @@ def main():
     else:
         print("Security tests failed!")
         sys.exit(1)
+
 
 if __name__ == "__main__":
     main()

@@ -1,16 +1,16 @@
 """Main application entry point for the Cognitive Orchestration Stack TUI."""
 
-import sys
 import logging
+import sys
 from pathlib import Path
 
 from textual.app import App
 from textual.logging import TextualHandler
 
+from .screens.aris import ArisScreen
+from .screens.ingest import IngestScreen
 from .screens.main_menu import MainMenuScreen
 from .screens.query import QueryScreen
-from .screens.ingest import IngestScreen
-from .screens.aris import ArisScreen
 from .screens.status import StatusScreen
 from .widgets.clipboard_input import ClipboardInput
 
@@ -93,15 +93,26 @@ def setup_logging() -> None:
     log_dir = Path("logs")
     log_dir.mkdir(exist_ok=True)
 
-    # Configure logging
+    # Configure logging - only show WARNING and above in TUI, INFO goes to file only
     logging.basicConfig(
         level=logging.INFO,
         format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
         handlers=[
             logging.FileHandler(log_dir / "tui.log"),
+            # Only show WARNING and above in the TUI interface
             TextualHandler(),
         ],
     )
+
+    # Set the TextualHandler level separately
+    textual_handler = None
+    for handler in logging.root.handlers:
+        if isinstance(handler, TextualHandler):
+            textual_handler = handler
+            break
+
+    if textual_handler:
+        textual_handler.setLevel(logging.WARNING)
 
 
 def main() -> None:

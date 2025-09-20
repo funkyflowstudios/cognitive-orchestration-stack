@@ -4,13 +4,14 @@ import asyncio
 from typing import Optional
 
 from textual.app import ComposeResult
-from textual.widgets import RichLog, Input
+from textual.widgets import Input, RichLog
 from textual.worker import Worker
 
 # Import the actual backend orchestration
 from src.orchestration.graph import GRAPH
-from ..widgets.clipboard_input import ClipboardInput
 from src.orchestration.state import AgentState
+
+from ..widgets.clipboard_input import ClipboardInput
 from .base_screen import BaseScreen
 
 
@@ -28,9 +29,7 @@ class QueryScreen(BaseScreen):
         """Compose the query screen content."""
         # Use RichLog for styled, scrollable conversation history
         yield RichLog(id="conversation-log", wrap=True, highlight=True, max_lines=100)
-        yield ClipboardInput(
-            placeholder="Type your query here...", id="query-input"
-        )
+        yield ClipboardInput(placeholder="Type your query here...", id="query-input")
 
     def on_mount(self) -> None:
         """Called when the screen is mounted."""
@@ -38,9 +37,7 @@ class QueryScreen(BaseScreen):
         # Focus on the input field
         self.query_one("#query-input", ClipboardInput).focus()
 
-    async def on_input_submitted(
-        self, event: Input.Submitted
-    ) -> None:
+    async def on_input_submitted(self, event: Input.Submitted) -> None:
         """Handle when the user submits a query."""
         query_text = event.value.strip()
         if not query_text:
@@ -65,9 +62,7 @@ class QueryScreen(BaseScreen):
         async def worker_func():
             await self.run_backend_query(query_text)
 
-        self._current_worker = self.run_worker(
-            worker_func, exclusive=True
-        )
+        self._current_worker = self.run_worker(worker_func, exclusive=True)
 
     async def run_backend_query(self, query: str) -> None:
         """

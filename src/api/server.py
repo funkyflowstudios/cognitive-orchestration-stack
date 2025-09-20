@@ -11,7 +11,12 @@ from src.api.docs import router as docs_router
 from src.api.health import router as health_router
 from src.api.metrics import router as metrics_router
 from src.utils.logger import get_logger
-from src.utils.metrics import error_count, request_count, success_count, initialize_metrics
+from src.utils.metrics import (
+    error_count,
+    initialize_metrics,
+    request_count,
+    success_count,
+)
 
 logger = get_logger(__name__)
 

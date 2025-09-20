@@ -62,9 +62,7 @@ class Neo4jAgent:
             result = session.run(cypher, parameters or {})
             return [record.data() for record in result]
 
-    async def query_async(
-        self, cypher: str, parameters: dict | None = None
-    ) -> list:
+    async def query_async(self, cypher: str, parameters: dict | None = None) -> list:
         """
         Async version of query method for better performance.
 

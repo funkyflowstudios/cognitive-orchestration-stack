@@ -40,9 +40,7 @@ def _get_settings():
 settings = _get_settings()
 
 # Define the format for log messages
-FORMATTER = logging.Formatter(
-    "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-)
+FORMATTER = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 LOG_FILE = "logs/app.log"
 
 
@@ -57,9 +55,7 @@ def configure_structured_logging(
         use_json: Whether to use JSON formatting for production
     """
     if not STRUCTLOG_AVAILABLE:
-        logging.warning(
-            "structlog not available, falling back to standard logging"
-        )
+        logging.warning("structlog not available, falling back to standard logging")
         return
 
     # Reset any existing logging configuration
@@ -89,7 +85,9 @@ def configure_structured_logging(
     if use_json or os.getenv("APP_ENV") == "prod":
         processors.append(structlog.processors.JSONRenderer())
     else:
-        processors.append(structlog.dev.ConsoleRenderer(colors=False))  # Disable colors for tests
+        processors.append(
+            structlog.dev.ConsoleRenderer(colors=False)
+        )  # Disable colors for tests
 
     # Configure structlog
     structlog.configure(
@@ -141,9 +139,7 @@ def get_file_handler():
         return logging.NullHandler()
 
     # Rotates the log file every day, keeping 7 days of backups
-    file_handler = TimedRotatingFileHandler(
-        LOG_FILE, when="midnight", backupCount=7
-    )
+    file_handler = TimedRotatingFileHandler(LOG_FILE, when="midnight", backupCount=7)
     file_handler.setFormatter(FORMATTER)
     return file_handler
 

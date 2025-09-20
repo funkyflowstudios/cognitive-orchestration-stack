@@ -5,13 +5,10 @@ from pathlib import Path
 from typing import Optional
 
 from textual.app import ComposeResult
-from textual.widgets import (
-    Button,
-    Static,
-    ProgressBar,
-    OptionList,
-)
+from textual.widgets import Button, OptionList, ProgressBar, Static
+
 from src.tui.widgets.clipboard_input import ClipboardInput
+
 from .base_screen import BaseScreen
 
 
@@ -32,14 +29,10 @@ class IngestScreen(BaseScreen):
         """Compose the ingest screen content."""
         # Directory input section
         yield Static("Select directory to ingest:", id="dir-label")
-        yield ClipboardInput(
-            placeholder="Enter directory path...", id="dir-input"
-        )
+        yield ClipboardInput(placeholder="Enter directory path...", id="dir-input")
 
         # Action buttons
-        yield Button(
-            "Start Ingestion", id="start-button", variant="primary"
-        )
+        yield Button("Start Ingestion", id="start-button", variant="primary")
 
         # Progress section
         yield Static("Progress:", id="progress-label")
@@ -91,9 +84,7 @@ class IngestScreen(BaseScreen):
             self._current_worker.cancel()
 
         # Start ingestion worker
-        self._current_worker = asyncio.create_task(
-            self.run_ingestion(directory_path)
-        )
+        self._current_worker = asyncio.create_task(self.run_ingestion(directory_path))
 
     async def run_ingestion(self, directory: Path) -> None:
         """
@@ -157,7 +148,9 @@ class IngestScreen(BaseScreen):
                 )
 
                 # Simulate processing time based on file size
-                processing_time = min(0.1, max(0.01, file_path.stat().st_size / 1000000))
+                processing_time = min(
+                    0.1, max(0.01, file_path.stat().st_size / 1000000)
+                )
                 await asyncio.sleep(processing_time)
 
                 # Log progress
@@ -239,7 +232,9 @@ class IngestScreen(BaseScreen):
             if "processing" in message.lower() or "initializing" in message.lower():
                 self._log_message(message, "info")
 
-    def _update_progress(self, current: int, total: Optional[int] = None, message: Optional[str] = None) -> None:
+    def _update_progress(
+        self, current: int, total: Optional[int] = None, message: Optional[str] = None
+    ) -> None:
         """Update the progress bar with real-time information."""
         if total is not None:
             self._progress_total = total
@@ -260,7 +255,8 @@ class IngestScreen(BaseScreen):
             percentage = int((current / self._progress_total) * 100)
             status_text = self.query_one("#status-text", Static)
             status_text.update(
-                f"Status: {self._progress_message} ({current}/{self._progress_total} - {percentage}%)"
+                f"Status: {self._progress_message} "
+                f"({current}/{self._progress_total} - {percentage}%)"
             )
         else:
             status_text = self.query_one("#status-text", Static)

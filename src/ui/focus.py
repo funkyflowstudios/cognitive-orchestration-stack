@@ -4,10 +4,7 @@ from __future__ import annotations
 import time
 
 from rich.align import Align
-from rich.console import (
-    Console,
-    RenderableType,
-)
+from rich.console import Console, RenderableType
 from rich.live import Live
 from rich.panel import Panel
 from rich.spinner import Spinner
@@ -59,9 +56,7 @@ class FocusController:  # noqa: D101
     # --------------------------- API ------------------------------------
 
     def set_planning(self) -> None:  # noqa: D401
-        self._current_renderable = Spinner(
-            "dots", text=" [🧠 PLANNING] Thinking..."
-        )
+        self._current_renderable = Spinner("dots", text=" [🧠 PLANNING] Thinking...")
         self._live.update(self._current_renderable)
 
     def set_executing(self, tool: str) -> None:  # noqa: D401

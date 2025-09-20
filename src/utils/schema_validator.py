@@ -13,7 +13,7 @@ from src.utils.logger import get_logger
 logger = get_logger(__name__)
 
 
-class SchemaValidationError(Exception):
+class SchemaValidationError(ValueError):
     """Raised when JSON schema validation fails."""
 
     pass
@@ -35,6 +35,7 @@ class SafeJSONParser:
                         "graph_search",
                         "vector_search_async",
                         "graph_search_async",
+                        "neo4j_query",
                     ],
                 },
                 "minItems": 1,
@@ -42,13 +43,11 @@ class SafeJSONParser:
             }
         },
         "required": ["plan"],
-        "additionalProperties": False,
+        "additionalProperties": True,
     }
 
     @classmethod
-    def validate_planner_response(
-        cls, data: Dict[str, Any]
-    ) -> Dict[str, List[str]]:
+    def validate_planner_response(cls, data: Dict[str, Any]) -> Dict[str, List[str]]:
         """
         Validate and parse planner response with schema validation.
 
@@ -76,20 +75,17 @@ class SafeJSONParser:
                 "graph_search",
                 "vector_search_async",
                 "graph_search_async",
+                "neo4j_query",
             }
             invalid_tools = set(plan) - valid_tools
             if invalid_tools:
-                raise SchemaValidationError(
-                    f"Invalid tools in plan: {invalid_tools}"
-                )
+                raise SchemaValidationError(f"Invalid tools in plan: {invalid_tools}")
 
-            return {"plan": plan}
+            return data
 
         except ValidationError as e:
             logger.error("Schema validation failed: %s", e.message)
-            raise SchemaValidationError(
-                f"Schema validation failed: {e.message}"
-            )
+            raise SchemaValidationError(f"Schema validation failed: {e.message}")
         except Exception as e:
             logger.error("Unexpected error during validation: %s", str(e))
             raise SchemaValidationError(f"Validation error: {str(e)}")
@@ -127,7 +123,7 @@ class SafeJSONParser:
             raise SchemaValidationError(f"Invalid JSON: {str(e)}")
         except Exception as e:
             logger.error("Unexpected error during JSON parsing: %s", str(e))
-            raise SchemaValidationError(f"JSON parsing error: {str(e)}")
+            raise SchemaValidationError(f"Invalid JSON: {str(e)}")
 
 
 def sanitize_user_input(user_input: str) -> str:
@@ -140,13 +136,15 @@ def sanitize_user_input(user_input: str) -> str:
     Returns:
         Sanitized user input
     """
+    if user_input is None:
+        return None
     if not user_input:
         return ""
 
     # Remove or escape potentially dangerous characters
     # This is a basic implementation - in production, you might want more
     # sophisticated sanitization
-    sanitized = user_input.strip()
+    sanitized = user_input
 
     # Remove common prompt injection patterns
     injection_patterns = [
@@ -166,9 +164,7 @@ def sanitize_user_input(user_input: str) -> str:
         if pattern.lower() in sanitized.lower():
             logger.warning("Potential prompt injection detected: %s", pattern)
             # Remove the pattern and everything after it
-            sanitized = sanitized[
-                : sanitized.lower().find(pattern.lower())
-            ].strip()
+            sanitized = sanitized[: sanitized.lower().find(pattern.lower())].strip()
 
     # Limit length to prevent extremely long inputs
     max_length = 10000

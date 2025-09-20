@@ -30,9 +30,7 @@ class TestChromaDBAgent:
         else:
             mock_documents = [["Mock document 1", "Mock document 2"]]
 
-        mock_collection.query.return_value = {
-            "documents": mock_documents
-        }
+        mock_collection.query.return_value = {"documents": mock_documents}
 
         # Reset the singleton and set the mock client
         ChromaDBAgent._client = mock_client
@@ -45,7 +43,7 @@ class TestChromaDBAgent:
 
     def test_chromadb_agent_initialization(self, mock_settings):
         """Test ChromaDBAgent initialization."""
-        with patch('src.tools.chromadb_agent.OllamaEmbedding') as mock_embedding_class:
+        with patch("src.tools.chromadb_agent.OllamaEmbedding") as mock_embedding_class:
 
             mock_embedding = MagicMock()
             mock_embedding_class.return_value = mock_embedding
@@ -61,7 +59,7 @@ class TestChromaDBAgent:
 
     def test_chromadb_agent_singleton_client(self, mock_settings):
         """Test that ChromaDBAgent uses singleton client."""
-        with patch('src.tools.chromadb_agent.OllamaEmbedding') as mock_embedding_class:
+        with patch("src.tools.chromadb_agent.OllamaEmbedding") as mock_embedding_class:
 
             mock_embedding = MagicMock()
             mock_embedding_class.return_value = mock_embedding
@@ -76,7 +74,7 @@ class TestChromaDBAgent:
 
     def test_chromadb_agent_similarity_search(self, mock_settings, mock_chromadb):
         """Test similarity search functionality."""
-        with patch('src.tools.chromadb_agent.OllamaEmbedding') as mock_embedding_class:
+        with patch("src.tools.chromadb_agent.OllamaEmbedding") as mock_embedding_class:
             agent = self._setup_mock_agent(mock_embedding_class)
             # Clear any existing cache
             agent.clear_cache()
@@ -87,34 +85,37 @@ class TestChromaDBAgent:
             # Note: The embedding function might not be called due to caching
             # We'll test the result instead of the call count
 
-    def test_chromadb_agent_similarity_search_custom_n_results(self,
-    mock_settings, mock_chromadb):
+    def test_chromadb_agent_similarity_search_custom_n_results(
+        self, mock_settings, mock_chromadb
+    ):
         """Test similarity search with custom n_results."""
-        with patch('src.tools.chromadb_agent.OllamaEmbedding') as mock_embedding_class:
+        with patch("src.tools.chromadb_agent.OllamaEmbedding") as mock_embedding_class:
             agent = self._setup_mock_agent(mock_embedding_class, n_results=1)
             result = agent.similarity_search("test query", n_results=1)
 
             # The mock returns ["Mock document 1"] for n_results=1
             assert result == ["Mock document 1"]
 
-    def test_chromadb_agent_similarity_search_empty_results(self,
-    mock_settings, mock_chromadb):
+    def test_chromadb_agent_similarity_search_empty_results(
+        self, mock_settings, mock_chromadb
+    ):
         """Test similarity search with empty results."""
         # This test needs to be updated since the global mock always returns documents
         # We'll test the actual behavior instead
-        with patch('src.tools.chromadb_agent.OllamaEmbedding') as mock_embedding_class:
+        with patch("src.tools.chromadb_agent.OllamaEmbedding") as mock_embedding_class:
             agent = self._setup_mock_agent(mock_embedding_class)
             result = agent.similarity_search("test query")
 
             # The mock returns documents, so we test that behavior
             assert result == ["Mock document 1", "Mock document 2"]
 
-    def test_chromadb_agent_similarity_search_no_documents_key(self,
-    mock_settings, mock_chromadb):
+    def test_chromadb_agent_similarity_search_no_documents_key(
+        self, mock_settings, mock_chromadb
+    ):
         """Test similarity search when documents key is missing."""
         # This test needs to be updated since the global mock always returns documents
         # We'll test the actual behavior instead
-        with patch('src.tools.chromadb_agent.OllamaEmbedding') as mock_embedding_class:
+        with patch("src.tools.chromadb_agent.OllamaEmbedding") as mock_embedding_class:
             agent = self._setup_mock_agent(mock_embedding_class)
             result = agent.similarity_search("test query")
 
@@ -122,9 +123,11 @@ class TestChromaDBAgent:
             assert result == ["Mock document 1", "Mock document 2"]
 
     @pytest.mark.asyncio
-    async def test_chromadb_agent_similarity_search_async(self, mock_settings, mock_chromadb):
+    async def test_chromadb_agent_similarity_search_async(
+        self, mock_settings, mock_chromadb
+    ):
         """Test async similarity search functionality."""
-        with patch('src.tools.chromadb_agent.OllamaEmbedding') as mock_embedding_class:
+        with patch("src.tools.chromadb_agent.OllamaEmbedding") as mock_embedding_class:
             agent = self._setup_mock_agent(mock_embedding_class)
             result = await agent.similarity_search_async("test query")
 
@@ -133,7 +136,7 @@ class TestChromaDBAgent:
 
     def test_chromadb_agent_cached_search(self, mock_settings, mock_chromadb):
         """Test that similarity search uses caching."""
-        with patch('src.tools.chromadb_agent.OllamaEmbedding') as mock_embedding_class:
+        with patch("src.tools.chromadb_agent.OllamaEmbedding") as mock_embedding_class:
             agent = self._setup_mock_agent(mock_embedding_class)
             # Clear any existing cache
             agent.clear_cache()
@@ -149,7 +152,7 @@ class TestChromaDBAgent:
 
     def test_chromadb_agent_clear_cache(self, mock_settings, mock_chromadb):
         """Test cache clearing functionality."""
-        with patch('src.tools.chromadb_agent.OllamaEmbedding') as mock_embedding_class:
+        with patch("src.tools.chromadb_agent.OllamaEmbedding") as mock_embedding_class:
             agent = self._setup_mock_agent(mock_embedding_class)
             # Clear any existing cache
             agent.clear_cache()
@@ -167,7 +170,7 @@ class TestChromaDBAgent:
 
     def test_chromadb_agent_close(self, mock_settings):
         """Test close functionality."""
-        with patch('src.tools.chromadb_agent.OllamaEmbedding') as mock_embedding_class:
+        with patch("src.tools.chromadb_agent.OllamaEmbedding") as mock_embedding_class:
 
             mock_embedding = MagicMock()
             mock_embedding_class.return_value = mock_embedding
@@ -181,15 +184,16 @@ class TestChromaDBAgent:
 
     def test_chromadb_agent_embedding_function_none_error(self, mock_settings):
         """Test error when embedding function is None."""
-        with patch('src.tools.chromadb_agent.OllamaEmbedding') as mock_embedding_class:
+        with patch("src.tools.chromadb_agent.OllamaEmbedding") as mock_embedding_class:
 
             mock_embedding_class.return_value = None
 
             agent = ChromaDBAgent("test_collection")
             agent._embedding_function = None
 
-            with pytest.raises(RuntimeError,
-    match="Embedding function not initialized"):
+            with pytest.raises(
+                RuntimeError, match="Embedding function not initialized"
+            ):
                 agent.similarity_search("test query")
 
     def test_chromadb_agent_lru_cache_maxsize(self, mock_settings):
@@ -197,7 +201,7 @@ class TestChromaDBAgent:
         from src.tools.chromadb_agent import ChromaDBAgent
 
         # Check that the _cached_search method has the lru_cache decorator
-        cached_search = getattr(ChromaDBAgent, '_cached_search')
+        cached_search = getattr(ChromaDBAgent, "_cached_search")
         # The cache_info method should be available if lru_cache is applied
-        assert hasattr(cached_search, 'cache_info')
-        assert hasattr(cached_search, 'cache_clear')
+        assert hasattr(cached_search, "cache_info")
+        assert hasattr(cached_search, "cache_clear")

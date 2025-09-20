@@ -1,19 +1,19 @@
 """Tests for the metrics collection module."""
 
-import time
 import threading
+import time
 
 import pytest
 
 from src.utils.metrics import (
-    increment,
-    timing,
-    gauge,
-    histogram,
     error_count,
+    gauge,
     get_metrics,
+    histogram,
+    increment,
     reset_metrics,
     timed,
+    timing,
 )
 
 
@@ -44,8 +44,10 @@ class TestMetricsCollection:
 
         metrics = get_metrics()
         assert "test_timer" in metrics["timers"]
-        assert len(metrics["timers"]["test_timer"]) == 3
-        assert 1.5 in metrics["timers"]["test_timer"]
+        assert metrics["timers"]["test_timer"]["count"] == 3
+        assert metrics["timers"]["test_timer"]["min"] == 0.5
+        assert metrics["timers"]["test_timer"]["max"] == 2.0
+        assert metrics["timers"]["test_timer"]["avg"] == 1.3333333333333333
 
     def test_set_gauge(self):
         """Test gauge setting functionality."""
@@ -69,8 +71,10 @@ class TestMetricsCollection:
 
         metrics = get_metrics()
         assert "test_histogram" in metrics["histograms"]
-        assert len(metrics["histograms"]["test_histogram"]) == 3
-        assert 20 in metrics["histograms"]["test_histogram"]
+        assert metrics["histograms"]["test_histogram"]["count"] == 3
+        assert metrics["histograms"]["test_histogram"]["min"] == 10
+        assert metrics["histograms"]["test_histogram"]["max"] == 30
+        assert metrics["histograms"]["test_histogram"]["avg"] == 20.0
 
     def test_increment_error_count(self):
         """Test error count increment functionality."""
@@ -103,14 +107,16 @@ class TestMetricsCollection:
         assert "gauges" in summary
         assert "histograms" in summary
         assert "error_counts" in summary
-        assert "performance_trends" in summary
+        assert "performance_summary" in summary
         assert "system_health" in summary
 
         # Verify specific values
         assert summary["counters"]["test_counter"] == 5
-        assert summary["timers"]["test_timer"] == [1.0]
+        assert summary["timers"]["test_timer"]["count"] == 1
+        assert summary["timers"]["test_timer"]["avg"] == 1.0
         assert summary["gauges"]["test_gauge"] == 50
-        assert summary["histograms"]["test_histogram"] == [25]
+        assert summary["histograms"]["test_histogram"]["count"] == 1
+        assert summary["histograms"]["test_histogram"]["avg"] == 25
         assert summary["error_counts"]["test_error"] == 2
 
     def test_get_performance_trends(self):
@@ -124,7 +130,7 @@ class TestMetricsCollection:
 
         trends = get_metrics()["performance_trends"]
         assert "performance_test" in trends
-        assert len(trends["performance_test"]) >= 3
+        assert len(trends["performance_test"]) == 3
 
     def test_get_system_health(self):
         """Test system health metrics."""
@@ -161,8 +167,8 @@ class TestMetricsCollection:
         # Verify performance was tracked
         metrics = get_metrics()
         assert "decorated_function" in metrics["timers"]
-        assert len(metrics["timers"]["decorated_function"]) == 1
-        assert metrics["timers"]["decorated_function"][0] > 0
+        assert metrics["timers"]["decorated_function"]["count"] == 1
+        assert metrics["timers"]["decorated_function"]["avg"] > 0
 
     def test_track_performance_with_exception(self):
         """Test timed decorator with exceptions."""
@@ -179,7 +185,7 @@ class TestMetricsCollection:
         # Verify performance was still tracked
         metrics = get_metrics()
         assert "error_function" in metrics["timers"]
-        assert len(metrics["timers"]["error_function"]) == 1
+        assert metrics["timers"]["error_function"]["count"] == 1
 
     def test_thread_safety(self):
         """Test that metrics collection is thread-safe."""
@@ -216,9 +222,9 @@ class TestMetricsCollection:
 
         # Verify all metrics are reset
         metrics = get_metrics()
-        assert metrics["counters"]["test_counter"] == 0
-        assert metrics["timers"]["test_timer"] == []
-        assert metrics["gauges"]["test_gauge"] == 0
+        assert "test_counter" not in metrics["counters"]
+        assert "test_timer" not in metrics["timers"]
+        assert "test_gauge" not in metrics["gauges"]
 
     def test_metrics_with_custom_labels(self):
         """Test metrics with custom labels and metadata."""
@@ -235,7 +241,8 @@ class TestMetricsCollection:
 
         metrics = get_metrics()
         assert metrics["counters"]["custom_counter"] == 42
-        assert metrics["timers"]["custom_timer"] == [3.14]
+        assert metrics["timers"]["custom_timer"]["count"] == 1
+        assert metrics["timers"]["custom_timer"]["avg"] == 3.14
         assert metrics["gauges"]["custom_gauge"] == 99
 
     def test_error_count_tracking(self):
@@ -265,8 +272,10 @@ class TestMetricsCollection:
         histogram_data = metrics["histograms"]["test_histogram"]
 
         # Verify all values are recorded
-        assert len(histogram_data) == 10
-        assert set(histogram_data) == set(values)
+        assert histogram_data["count"] == 10
+        assert histogram_data["min"] == 1
+        assert histogram_data["max"] == 10
+        assert histogram_data["avg"] == 5.5
 
     def test_performance_trends_rolling_window(self):
         """Test that performance trends maintain rolling window."""
