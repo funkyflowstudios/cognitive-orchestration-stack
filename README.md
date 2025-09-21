@@ -375,6 +375,7 @@ The system supports multiple environments with automatic configuration loading:
 **IMPORTANT**: API keys and passwords are stored in environment files that are **NOT committed to git** for security.
 
 **Quick Setup:**
+
 ```bash
 # Run the setup script
 python scripts/setup_dev_env.py
@@ -384,11 +385,13 @@ cp config/dev.env.template config/dev.env
 ```
 
 **Then edit `config/dev.env` with your actual credentials:**
+
 - `NEO4J_PASSWORD`: Your Neo4j database password
 - `SERPAPI_KEY`: Get from [SerpAPI](https://serpapi.com/)
 - `BRAVE_API_KEY`: Get from [Brave Search API](https://brave.com/search/api/)
 
 **Security Notes:**
+
 - ✅ `config/dev.env` is gitignored (never committed)
 - ✅ `config/dev.env.template` is safe to commit (no secrets)
 - ✅ Never share your `dev.env` file

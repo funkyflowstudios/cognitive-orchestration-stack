@@ -5,6 +5,7 @@ Thank you for considering a contribution! Fork the repo, create a topic branch, 
 ## Development Setup
 
 1. **Clone and setup**:
+
    ```bash
    git clone <repo-url>
    cd agent_stack
@@ -12,6 +13,7 @@ Thank you for considering a contribution! Fork the repo, create a topic branch, 
    ```
 
 2. **Configure environment**:
+
    ```bash
    cp config/dev.env.template config/dev.env
    # Edit config/dev.env with your credentials
@@ -22,6 +24,7 @@ Thank you for considering a contribution! Fork the repo, create a topic branch, 
 1. **Follow PEP 8** & project coding standards (88 character line length)
 2. **Include type hints** and comprehensive docstrings
 3. **Run quality checks** locally—PRs must be clean:
+
    ```bash
    poetry run black src tests
    poetry run isort src tests
@@ -29,6 +32,7 @@ Thank you for considering a contribution! Fork the repo, create a topic branch, 
    poetry run mypy src
    poetry run pytest -v
    ```
+
 4. **Update documentation** for new features (README, TUI docs, test docs)
 5. **One feature or fix** per pull request
 
